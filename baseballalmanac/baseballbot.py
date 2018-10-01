@@ -26,7 +26,7 @@ def _get_game_threads():
 def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None) -> List[dict]:
     active = []
     for game_thread in _get_game_threads():
-        if subreddits and game_thread.get('subreddit', {}).get('name') not in subreddits:
+        if subreddits and game_thread['subreddit']['name'] not in subreddits:
             continue
         posts_at = datetime.fromisoformat(game_thread['posts_at'])
         if datetime.now(timezone.utc) < posts_at:

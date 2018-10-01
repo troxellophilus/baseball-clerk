@@ -16,11 +16,11 @@ def _get_gumbo(game_pk: str) -> dict:
     return response.json()
 
 
-def new_plays(game_pk: str) -> List[dict]:
+def new_plays(game_pk: str, subreddit_name: str) -> List[dict]:
     gumbo = _get_gumbo(game_pk)
     updated_plays = gumbo.get('liveData', [])
 
-    key = f'plays-{game_pk}'
+    key = f'plays-{game_pk}-{subreddit_name}'
     known_plays = datastore.read(key, [])
 
     new_plays_idx = len(known_plays)
@@ -31,6 +31,10 @@ def new_plays(game_pk: str) -> List[dict]:
     return plays[new_plays_idx:]
 
 
-def due_up(game_pk: str) -> dict:
+def due_up(game_pk: str, subreddit_name: str) -> dict:
+    # linescore = _get_linescore(game_pk)
+
+    # key = f'dueup-{game_pk}-{subreddit_name}'
+    # due_ups = datastore.read(key, [])
     raise NotImplementedError()
     return {}

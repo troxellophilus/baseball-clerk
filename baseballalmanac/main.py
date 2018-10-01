@@ -40,15 +40,16 @@ def main():
     reddit = praw.Reddit(praw_bot)
 
     for game_thread in baseballbot.active_game_threads(reddit, subreddits):
+        subreddit_name = game_thread['subreddit']['name']
         game_pk = game_thread['game_pk']
         gamechat = reddit.submission(game_thread['post_id'])
 
         # Post gamechat linescore updates (due up batters, pitching changes, substitutions, etc.)
-        due_up = mlb.due_up(game_pk)
+        due_up = mlb.due_up(game_pk, subreddit_name)
         comment.due_up(gamechat, due_up)
 
         # Post gamechat announcements (statcast & other play by play data)
-        for play in mlb.new_plays(game_pk):
+        for play in mlb.new_plays(game_pk, subreddit_name):
             event = play.get('result', {}).get('event', '').lower()
             if not event:
                 continue
