@@ -1,5 +1,7 @@
+from datetime import datetime
+from datetime import timezone
 from functools import lru_cache
-from typing import Tuple
+from typing import List
 
 import praw
 import requests
@@ -21,10 +23,15 @@ def _get_game_threads():
     return response.json()['data']
 
 
-def active_game_thread(reddit: praw.Reddit, subreddit_name: str) -> Tuple[praw.models.Submission, str]:
-    # TODO: Handle timings.
+def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None) -> List[dict]:
+    active = []
     for game_thread in _get_game_threads():
-        if game_thread.get('subreddit', {}).get('name', '').lower() == subreddit_name:
-            return game_thread
+        if subreddits and game_thread.get('subreddit', {}).get('name') not in subreddits:
+            continue
+        posts_at = datetime.fromisoformat(game_thread['posts_at'])
+        if datetime.now(timezone.utc) < posts_at:
+            continue
+        active.append(game_thread)
     else:
         raise NoActiveGameError()
+    return active
