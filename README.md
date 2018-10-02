@@ -14,5 +14,5 @@
 * pitching changes & substitutions
 * hit expectancy ('great play')
 * stats command
-* replay command
+* replay command (default response or command?)
 * allow for alternate praw ini oauth credentials per subreddit

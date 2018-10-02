@@ -59,10 +59,10 @@ def main():
             elif event == 'homerun':
                 comment.homerun(gamechat, play)
 
-        # Run message responses (stats, text faces)
-        for item in reddit.inbox.unread():
-            if isinstance(item, praw.models.Comment):
-                comment.text_face(item)
+    # Run message responses (stats, text faces)
+    for item in reddit.inbox.unread():
+        if isinstance(item, praw.models.Comment):
+            comment.text_face(item)
 
 
 if __name__ == '__main__':

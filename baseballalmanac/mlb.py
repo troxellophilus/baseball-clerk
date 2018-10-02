@@ -21,11 +21,6 @@ def _get_gumbo(game_pk: str) -> dict:
     return _get_path(path)
 
 
-def _get_linescore(game_pk: str) -> dict:
-    path = f"/api/v1/game/{game_pk}/linescore"
-    return _get_path(path)
-
-
 def new_plays(game_pk: str, subreddit_name: str) -> List[dict]:
     gumbo = _get_gumbo(game_pk)
     updated_plays = gumbo.get('liveData', [])
@@ -39,6 +34,11 @@ def new_plays(game_pk: str, subreddit_name: str) -> List[dict]:
     datastore.write(key, plays)
 
     return plays[new_plays_idx:]
+
+
+def _get_linescore(game_pk: str) -> dict:
+    path = f"/api/v1/game/{game_pk}/linescore"
+    return _get_path(path)
 
 
 def due_up(game_pk: str, subreddit_name: str) -> dict:
