@@ -3,7 +3,7 @@
 ## To-Do
 
 * better user agent in requests (use session objects maybe?)
-* due up
+* ~~due up~~
 * text faces
 * ~~run against all baseballbot run threads rather than just one subreddit?~~
   * ~~exclude/include lists (in case of alternate bot)~~
@@ -14,3 +14,5 @@
 * pitching changes & substitutions
 * hit expectancy ('great play')
 * stats command
+* replay command
+* allow for alternate praw ini oauth credentials per subreddit

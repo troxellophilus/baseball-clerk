@@ -46,7 +46,8 @@ def main():
 
         # Post gamechat linescore updates (due up batters, pitching changes, substitutions, etc.)
         due_up = mlb.due_up(game_pk, subreddit_name)
-        comment.due_up(gamechat, due_up)
+        if due_up:
+            comment.due_up(gamechat, due_up)
 
         # Post gamechat announcements (statcast & other play by play data)
         for play in mlb.new_plays(game_pk, subreddit_name):
