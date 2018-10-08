@@ -5,8 +5,6 @@ from typing import List
 
 import requests
 
-import datastore
-
 
 @lru_cache()
 def _get_path(path: str) -> dict:
@@ -21,19 +19,10 @@ def _get_gumbo(game_pk: str) -> dict:
     return _get_path(path)
 
 
-def new_plays(game_pk: str, subreddit_name: str) -> List[dict]:
+def plays(game_pk: str) -> List[dict]:
     gumbo = _get_gumbo(game_pk)
-    updated_plays = gumbo.get('liveData', [])
-
-    key = f'plays-{game_pk}-{subreddit_name}'
-    known_plays = datastore.read(key, [])
-
-    new_plays_idx = len(known_plays)
-    plays = [p for p in updated_plays if p['about']['isComplete']]
-
-    datastore.write(key, plays)
-
-    return plays[new_plays_idx:]
+    plays = gumbo.get('liveData', {}).get('plays', {}).get('allPlays', [])
+    return plays
 
 
 def _get_linescore(game_pk: str) -> dict:
@@ -41,29 +30,19 @@ def _get_linescore(game_pk: str) -> dict:
     return _get_path(path)
 
 
-def due_up(game_pk: str, subreddit_name: str) -> dict:
+def due_up(game_pk: str) -> dict:
     linescore = _get_linescore(game_pk)
-
-    state = linescore.get('inningState')
-    if not state:
-        return None
 
     inning = linescore['inning'] + 1
     inning_half = linescore['inningHalf']
-    if state == 'end':
+    if linescore.get('inningState') == 'end':
         inning += 1
         inning_half = 'Top'
 
-    key = f'dueup-{game_pk}-{subreddit_name}'
-    existing = datastore.read(key, [])
-
-    due_up_obj = {
+    due_up = {
         'inning': inning,
         'inningHalf': inning_half
     }
-
-    if existing['inning'] == due_up_obj['inning'] and existing['inningHalf'] == due_up_obj['inningHalf']:
-        return None
 
     batter_profiles = [
         _get_path(linescore['offense']['batter']['link'])['people'][0],
@@ -81,7 +60,6 @@ def due_up(game_pk: str, subreddit_name: str) -> dict:
             }
         )
 
-    due_up_obj['batters'] = batters
+    due_up['batters'] = batters
 
-    datastore.write(key, due_up_obj)
-    return due_up_obj
+    return due_up

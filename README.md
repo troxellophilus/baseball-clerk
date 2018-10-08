@@ -9,6 +9,10 @@
   * ~~exclude/include lists (in case of alternate bot)~~
 * better readme
 * comments (the reddit kind)
+  * ~~strikeout~~
+  * homerun
+  * due up
+  * text_face
 * docstrings
 * ~~active game threads only~~
 * pitching changes & substitutions

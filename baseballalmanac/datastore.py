@@ -1,29 +1,67 @@
-"""JSON storage wrapper."""
+"""NoSQLite3."""
 
+from dataclasses import dataclass
 import json
+import logging
 import os
+import sqlite3
+import string
 from typing import Any
 
 
-_DATA_DIR = os.path.join(os.getcwd(), '_baseballalmanac')
+_CON = sqlite3.connect('BaseballClerk')
+
+
+def _read(table: str, key: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    with _CON:
+        row = _CON.execute(f'SELECT * FROM {table} WHERE key = ?', key).fetchone()
+    return row
+
+
+def _create_table(table: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    with _CON:
+        _CON.execute(f'CREATE TABLE IF NOT EXISTS {table}(key text PRIMARY KEY, data TEXT)')
+
+
+def _write(table: str, key: str, data: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    if not all(c in string.ascii_letters + string.digits + '-_' for c in key):
+        raise ValueError('Bad key.')
+    with _CON:
+        _CON.execute(f'INSERT INTO {table}({key}) VALUES({key}, ?) ON CONFLICT({key}) DO UPDATE SET data=excluded.data;', data)
+
+
+TBL_EVENT = 'event'
+TBL_COMMENT = 'comment'
 
 
 def init():
-    if not os.path.exists(_DATA_DIR):
-        os.mkdir(_DATA_DIR)
+    _create_table(TBL_EVENT)
+    _create_table(TBL_COMMENT)
 
 
-def read(key: str, default=None) -> Any:
-    path = os.path.join(_DATA_DIR, f'{key}.json')
+@dataclass
+class StoredObject(object):
+    key: str
+    data: dict
+
+
+def read(table: str, key: str, default=None) -> Any:
     try:
-        with open(path) as in_fo:
-            obj = json.load(in_fo)
-    except FileNotFoundError:
-        obj = default
-    return obj
+        row = _read(table, key)
+    except sqlite3.Error as err:
+        logging.error(err)
+        return default
+    data = json.dumps(row[1])
+    return StoredObject(key=row[0], data=data)
 
 
-def write(key: str, obj):
-    path = os.path.join(_DATA_DIR, f'{key}.json')
-    with open(path, 'w') as out_fo:
-        json.dump(obj, out_fo)
+def write(table: str, key: str, obj: dict):
+    data = json.dumps(obj)
+    _write(table, key, data)
+    return StoredObject(key=key, data=obj)
