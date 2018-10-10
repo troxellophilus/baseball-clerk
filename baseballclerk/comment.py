@@ -16,31 +16,61 @@ def _build_obj(comment: praw.models.Comment):
 def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     pitcher = play.data['matchup']['pitcher']['fullName']
     batter = play.data['matchup']['batter']['fullName']
-    event = play.data['playEvents'][-1]
 
+    event = play.data['playEvents'][-1]
     k = 'K' if event['details']['code'].lower() == 's' else 'ꓘ'
     pitch_type = event['details']['type']['description']
     count_b = event['count']['balls']
-    count_s = event['count']['strikes']
     speed = event['pitchData']['startSpeed']
 
-    body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-{count_s} count with a {speed} mph {pitch_type}."
+    body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-2 count with a {speed} mph {pitch_type}."
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
 
 
-def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
-    # pitcher = play['matchup']['pitcher']['fullName']
-    # batter = play['matchup']['batter']['fullName']
-    # event = play['playEvents'][-1]
+DONGER_VERBS = [
+    'cracks',
+    'smashes',
+    'crushes',
+    'rips',
+    'hammers',
+    'socks',
+    'unleashes'
+]
 
-    # comment = f"**HOMERUN**  {batter} {random.choice(verbs)} a "
-    raise NotImplementedError()
+
+def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
+    pitcher = play['matchup']['pitcher']['fullName']
+    batter = play['matchup']['batter']['fullName']
+    runs = play['results']['rbi']
+
+    event = play['playEvents'][-1]
+    pitch_type = event['details']['type']['description']
+    speed = event['hitData']['launchSpeed']
+    angle = event['hitData']['launchAngle']
+    distance = event['hitData']['totalDistance']
+
+    body = f"**HOME RUN**  {batter} {random.choice(DONGER_VERBS)} a {pitch_type} from {pitcher} {distance} ft for a {runs}-run home run.\n\nLaunch Speed: **{speed}** mph\n\nLaunch Angle: **{angle}**°"
+    comment = gamechat.reply(body)
+
+    return _build_obj(comment)
 
 
 def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
-    raise NotImplementedError()
+    inning = due_up['inning']
+    half = due_up['inningHalf']
+
+    batters_up = []
+    for batter in due_up['batters']:
+        hand = batter['batSide']
+        name = batter['fullName']
+        batters_up.append(f"{hand} {name}")
+
+    body = f"**Due Up ({half} {inning})**  {', '.join(batters_up)}"
+    comment = gamechat.reply(body)
+
+    return _build_obj(comment)
 
 
 TEXT_FACES = [

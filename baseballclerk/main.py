@@ -58,7 +58,7 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
         if play_result == 'strikeout':
             cmnt = comment.strikeout(gamechat, play)
             COMMENTS[key] = cmnt
-        elif play_result == 'homerun':
+        elif play_result == 'home run':
             cmnt = comment.homerun(gamechat, play)
             COMMENTS[key] = cmnt
 
