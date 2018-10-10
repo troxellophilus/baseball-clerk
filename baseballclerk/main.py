@@ -5,10 +5,10 @@ from typing import Tuple
 import praw
 import requests
 
-from baseballalmanac import baseballbot
-from baseballalmanac import comment
-from baseballalmanac import datastore
-from baseballalmanac import mlb
+from baseballclerk import baseballbot
+from baseballclerk import comment
+from baseballclerk import datastore
+from baseballclerk import mlb
 
 
 EVENTS = datastore.Table('event')
@@ -17,7 +17,7 @@ COMMENTS = datastore.Table('comment')
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--praw-bot', default='baseballalmanac', help="Name of oauth config in praw.ini file.")
+    parser.add_argument('--praw-bot', default='baseballclerk', help="Name of oauth config in praw.ini file.")
 
     def subreddits_type(arg: str):
         if arg.lower() == 'all':
