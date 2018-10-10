@@ -1,8 +1,6 @@
 """NoSQLite3."""
 
 from collections.abc import MutableMapping
-from dataclasses import dataclass
-from functools import lru_cache
 import json
 import logging
 import os
@@ -14,14 +12,18 @@ from typing import Any, Generator
 _CON = None  # type: sqlite3.Connection
 
 
-def connect(database):
+def connect(database: str, *args, **kwargs):
     global _CON
-    _CON = sqlite3.connect(database)
+    _CON = sqlite3.connect(database, *args, **kwargs)
 
 
-def _read(table: str, key: str):
+def _safety_first(table: str):
     if not all(c in string.ascii_letters + string.digits + '_' for c in table):
         raise ValueError('Bad table name.')
+
+
+def read(table: str, key: str):
+    _safety_first(table)
     with _CON:
         cur = _CON.cursor()
         cur.execute(f'SELECT * FROM {table} WHERE key = ?', key)
@@ -29,25 +31,20 @@ def _read(table: str, key: str):
     return row
 
 
-def _create_table(table: str):
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
+def create_table(table: str):
+    _safety_first(table)
     with _CON:
         _CON.execute(f'CREATE TABLE IF NOT EXISTS {table}(key text PRIMARY KEY, data TEXT)')
 
 
-def _write(table: str, key: str, data: str):
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
-    if not all(c in string.ascii_letters + string.digits + '-_' for c in key):
-        raise ValueError('Bad key.')
+def write(table: str, key: str, data: str):
+    _safety_first(table)
     with _CON:
-        _CON.execute(f'INSERT INTO {table}({key}) VALUES({key}, ?) ON CONFLICT({key}) DO UPDATE SET data=excluded.data;', data)
+        _CON.execute(f'INSERT INTO {table}(key) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET data=excluded.data;', key, data)
 
 
-def _keys(table: str) -> Generator:
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
+def keys(table: str) -> Generator:
+    _safety_first(table)
     with _CON:
         cur = _CON.cursor()
         cur.execute(f'SELECT key FROM {table};')
@@ -58,9 +55,8 @@ def _keys(table: str) -> Generator:
             yield from rows
 
 
-def _count(table: str) -> int:
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
+def count(table: str) -> int:
+    _safety_first(table)
     with _CON:
         cur = _CON.cursor()
         cur.execute(f'SELECT COUNT(*) FROM {table};')
@@ -68,27 +64,26 @@ def _count(table: str) -> int:
     return count
 
 
-def _delete(table: str, key: str):
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
+def delete(table: str, key: str):
+    _safety_first(table)
     with _CON:
         _CON.execute(f'DELETE FROM {table} WHERE key = ?;', key)
 
 
 class Table(MutableMapping):
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.table_name = name
         self._buf = {}
 
     def create_if_needed(self):
-        _create_table(self.table_name)
+        create_table(self.table_name)
 
     def __getitem__(self, key):
         try:
             item = self._buf[key]
         except IndexError:
-            row = _read(self.table_name, key)
+            row = read(self.table_name, key)
             item = self._buf[key] = json.dumps(row[1])
         return item
 
@@ -101,16 +96,16 @@ class Table(MutableMapping):
         return obj
 
     def __setitem__(self, key, item):
-        _write(self.table_name, key, json.dumps(item))
+        write(self.table_name, key, json.dumps(item))
         if self[key]:
             del self._buf[key]
 
     def __delitem__(self, key):
-        _delete(self.table_name, key)
+        delete(self.table_name, key)
         del self._buf[key]
 
     def __iter__(self):
-        return iter(_keys(self.table_name))
+        return iter(keys(self.table_name))
 
     def __len__(self):
-        return _count(self.table_name)
+        return count(self.table_name)

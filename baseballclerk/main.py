@@ -72,7 +72,10 @@ def main():
     if subreddits and exclude:
         subreddits = list(set(subreddits) - set(exclude))
 
+    # Connect the datastore and create tables if not existing.
     datastore.connect('BaseballClerk')
+    EVENTS.create_if_needed()
+    COMMENTS.create_if_needed()
 
     reddit = praw.Reddit(praw_bot)
 
