@@ -1,3 +1,4 @@
+import random
 from typing import Union
 
 import praw
@@ -12,7 +13,7 @@ def _build_obj(comment: praw.models.Comment):
     }
 
 
-def strikeout(gamechat: praw.models.Submission, play: dict):
+def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     pitcher = play.data['matchup']['pitcher']['fullName']
     batter = play.data['matchup']['batter']['fullName']
     event = play.data['playEvents'][-1]
@@ -29,7 +30,7 @@ def strikeout(gamechat: praw.models.Submission, play: dict):
     return _build_obj(comment)
 
 
-def homerun(gamechat: praw.models.Submission, play: dict):
+def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     # pitcher = play['matchup']['pitcher']['fullName']
     # batter = play['matchup']['batter']['fullName']
     # event = play['playEvents'][-1]
@@ -38,9 +39,21 @@ def homerun(gamechat: praw.models.Submission, play: dict):
     raise NotImplementedError()
 
 
-def due_up(gamechat: praw.models.Submission, due_up: dict):
+def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     raise NotImplementedError()
 
 
-def text_face(message: praw.models.Comment):
-    raise NotImplementedError()
+TEXT_FACES = [
+    '(✿◠‿◠)',
+    '(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧',
+    '(◡‿◡✿)',
+    '( ́ ◕◞ε◟◕`)',
+    '(｡◕‿◕｡)',
+    '(☞ﾟ∀ﾟ)☞'
+]
+
+
+def text_face(message: praw.models.Comment) -> dict:
+    body = f"{random.choice(TEXT_FACES)}"
+    comment = message.reply(body)
+    return _build_obj(comment)

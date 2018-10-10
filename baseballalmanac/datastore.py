@@ -8,7 +8,7 @@ import logging
 import os
 import sqlite3
 import string
-from typing import Any
+from typing import Any, Generator
 
 
 _CON = None  # type: sqlite3.Connection
@@ -45,7 +45,7 @@ def _write(table: str, key: str, data: str):
         _CON.execute(f'INSERT INTO {table}({key}) VALUES({key}, ?) ON CONFLICT({key}) DO UPDATE SET data=excluded.data;', data)
 
 
-def _keys(table: str):
+def _keys(table: str) -> Generator:
     if not all(c in string.ascii_letters + string.digits + '_' for c in table):
         raise ValueError('Bad table name.')
     with _CON:
@@ -58,13 +58,13 @@ def _keys(table: str):
             yield from rows
 
 
-def _count(table: str):
+def _count(table: str) -> int:
     if not all(c in string.ascii_letters + string.digits + '_' for c in table):
         raise ValueError('Bad table name.')
     with _CON:
         cur = _CON.cursor()
         cur.execute(f'SELECT COUNT(*) FROM {table};')
-        count = cur.fetchone()[0]
+        count = int(cur.fetchone()[0])
     return count
 
 
