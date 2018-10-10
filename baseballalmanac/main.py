@@ -11,6 +11,10 @@ from baseballalmanac import datastore
 from baseballalmanac import mlb
 
 
+EVENTS = datastore.Table('event')
+COMMENTS = datastore.Table('comment')
+
+
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--praw-bot', default='baseballalmanac', help="Name of oauth config in praw.ini file.")
@@ -30,30 +34,33 @@ def due_up(game_pk: str, gamechat: praw.models.Submission):
     """Post gamechat linescore updates (due up batters, pitching changes, substitutions, etc.)."""
     due_up = mlb.due_up(game_pk)
     key = f"dueup-{game_pk}-{gamechat.subreddit.display_name}-{due_up['inning']}-{due_up['inningHalf']}"
-    datastore.write(datastore.TBL_EVENT, key, due_up)
-    if due_up and not comment.exists(key):
-        comment.due_up(gamechat, due_up)
+    EVENTS[key] = due_up
+    if due_up and not COMMENTS.get(key):
+        cmnt = comment.due_up(gamechat, due_up)
+        COMMENTS[key] = cmnt
 
 
 def play_by_play(game_pk: str, gamechat: praw.models.Submission):
     """Post gamechat announcements (statcast & other play by play data)."""
-    for play in mlb.plays(game_pk):
+    for idx, play in enumerate(mlb.plays(game_pk)):
         # Update stored play.
-        key = f"play-{game_pk}-{gamechat.subreddit.display_name}-{play['atBatIndex']}"
-        event = datastore.write(datastore.TBL_EVENT, key, play)
+        key = f"play-{game_pk}-{gamechat.subreddit.display_name}-{idx}"
+        EVENTS[key] = play
 
         # Skip if we've already commented on this play.
-        if comment.exists(key):
+        if COMMENTS.get(key):
             continue
 
         # Comment for the play if necessary.
-        play_result = event.data.get('result', {}).get('event', '').lower()
+        play_result = play.get('result', {}).get('event', '').lower()
         if not play_result:
             continue
         if play_result == 'strikeout':
-            comment.strikeout(gamechat, event)
+            cmnt = comment.strikeout(gamechat, play)
+            COMMENTS[key] = cmnt
         elif play_result == 'homerun':
-            comment.homerun(gamechat, event)
+            cmnt = comment.homerun(gamechat, play)
+            COMMENTS[key] = cmnt
 
 
 def main():
@@ -65,7 +72,7 @@ def main():
     if subreddits and exclude:
         subreddits = list(set(subreddits) - set(exclude))
 
-    datastore.init()
+    datastore.connect('BaseballClerk')
 
     reddit = praw.Reddit(praw_bot)
 

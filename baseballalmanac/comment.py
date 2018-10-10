@@ -2,24 +2,17 @@ from typing import Union
 
 import praw
 
-from baseballalmanac import datastore
 
-
-def exists(key: str):
-    return bool(datastore.read(datastore.TBL_COMMENT, key))
-
-
-def _store(key: str, comment: praw.models.Comment):
-    obj = {
+def _build_obj(comment: praw.models.Comment):
+    return {
         'subreddit': comment.subreddit.display_name,
         'comment_id': comment.id,
         'parent_id': comment.parent_id,
         'body': comment.body
     }
-    datastore.write(datastore.TBL_COMMENT, key, obj)
 
 
-def strikeout(gamechat: praw.models.Submission, play: datastore.StoredObject):
+def strikeout(gamechat: praw.models.Submission, play: dict):
     pitcher = play.data['matchup']['pitcher']['fullName']
     batter = play.data['matchup']['batter']['fullName']
     event = play.data['playEvents'][-1]
@@ -33,7 +26,7 @@ def strikeout(gamechat: praw.models.Submission, play: datastore.StoredObject):
     body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-{count_s} count with a {speed} mph {pitch_type}."
     comment = gamechat.reply(body)
 
-    _store(play.key, comment)
+    return _build_obj(comment)
 
 
 def homerun(gamechat: praw.models.Submission, play: dict):

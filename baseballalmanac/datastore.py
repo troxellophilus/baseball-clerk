@@ -1,6 +1,8 @@
 """NoSQLite3."""
 
+from collections.abc import MutableMapping
 from dataclasses import dataclass
+from functools import lru_cache
 import json
 import logging
 import os
@@ -9,14 +11,21 @@ import string
 from typing import Any
 
 
-_CON = sqlite3.connect('BaseballClerk')
+_CON = None  # type: sqlite3.Connection
+
+
+def connect(database):
+    global _CON
+    _CON = sqlite3.connect(database)
 
 
 def _read(table: str, key: str):
     if not all(c in string.ascii_letters + string.digits + '_' for c in table):
         raise ValueError('Bad table name.')
     with _CON:
-        row = _CON.execute(f'SELECT * FROM {table} WHERE key = ?', key).fetchone()
+        cur = _CON.cursor()
+        cur.execute(f'SELECT * FROM {table} WHERE key = ?', key)
+        row = cur.fetchone()
     return row
 
 
@@ -36,32 +45,72 @@ def _write(table: str, key: str, data: str):
         _CON.execute(f'INSERT INTO {table}({key}) VALUES({key}, ?) ON CONFLICT({key}) DO UPDATE SET data=excluded.data;', data)
 
 
-TBL_EVENT = 'event'
-TBL_COMMENT = 'comment'
+def _keys(table: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    with _CON:
+        cur = _CON.cursor()
+        cur.execute(f'SELECT key FROM {table};')
+        while True:
+            rows = cur.fetchmany()
+            if not rows:
+                break
+            yield from rows
 
 
-def init():
-    _create_table(TBL_EVENT)
-    _create_table(TBL_COMMENT)
+def _count(table: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    with _CON:
+        cur = _CON.cursor()
+        cur.execute(f'SELECT COUNT(*) FROM {table};')
+        count = cur.fetchone()[0]
+    return count
 
 
-@dataclass
-class StoredObject(object):
-    key: str
-    data: dict
+def _delete(table: str, key: str):
+    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
+        raise ValueError('Bad table name.')
+    with _CON:
+        _CON.execute(f'DELETE FROM {table} WHERE key = ?;', key)
 
 
-def read(table: str, key: str, default=None) -> Any:
-    try:
-        row = _read(table, key)
-    except sqlite3.Error as err:
-        logging.error(err)
-        return default
-    data = json.dumps(row[1])
-    return StoredObject(key=row[0], data=data)
+class Table(MutableMapping):
 
+    def __init__(self, name):
+        self.table_name = name
+        self._buf = {}
 
-def write(table: str, key: str, obj: dict):
-    data = json.dumps(obj)
-    _write(table, key, data)
-    return StoredObject(key=key, data=obj)
+    def create_if_needed(self):
+        _create_table(self.table_name)
+
+    def __getitem__(self, key):
+        try:
+            item = self._buf[key]
+        except IndexError:
+            row = _read(self.table_name, key)
+            item = self._buf[key] = json.dumps(row[1])
+        return item
+
+    def get(self, key, default=None):
+        try:
+            obj = self[key]
+        except sqlite3.Error as err:
+            logging.error(err)
+            return default
+        return obj
+
+    def __setitem__(self, key, item):
+        _write(self.table_name, key, json.dumps(item))
+        if self[key]:
+            del self._buf[key]
+
+    def __delitem__(self, key):
+        _delete(self.table_name, key)
+        del self._buf[key]
+
+    def __iter__(self):
+        return iter(_keys(self.table_name))
+
+    def __len__(self):
+        return _count(self.table_name)
