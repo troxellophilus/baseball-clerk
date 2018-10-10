@@ -19,10 +19,10 @@ def _get_gumbo(game_pk: str) -> dict:
     return _get_path(path)
 
 
-def plays(game_pk: str) -> List[dict]:
+def completed_plays(game_pk: str) -> List[dict]:
     gumbo = _get_gumbo(game_pk)
     plays = gumbo.get('liveData', {}).get('plays', {}).get('allPlays', [])
-    return plays
+    return [p for p in plays if p['about']['isComplete']]
 
 
 def _get_linescore(game_pk: str) -> dict:

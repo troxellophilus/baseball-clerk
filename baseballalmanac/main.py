@@ -42,7 +42,7 @@ def due_up(game_pk: str, gamechat: praw.models.Submission):
 
 def play_by_play(game_pk: str, gamechat: praw.models.Submission):
     """Post gamechat announcements (statcast & other play by play data)."""
-    for idx, play in enumerate(mlb.plays(game_pk)):
+    for idx, play in enumerate(mlb.completed_plays(game_pk)):
         # Update stored play.
         key = f"play-{game_pk}-{gamechat.subreddit.display_name}-{idx}"
         EVENTS[key] = play
@@ -83,7 +83,6 @@ def main():
         due_up(game_pk, gamechat)
         play_by_play(game_pk, gamechat)
 
-    # Run message responses (stats, text faces)
     for item in reddit.inbox.unread():
         if isinstance(item, praw.models.Comment):
             comment.text_face(item)
