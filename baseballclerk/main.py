@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 from typing import Tuple
 
@@ -36,8 +37,11 @@ def due_up(game_pk: str, gamechat: praw.models.Submission):
     key = f"dueup-{game_pk}-{gamechat.subreddit.display_name}-{due_up['inning']}-{due_up['inningHalf']}"
     EVENTS[key] = due_up
     if due_up and not COMMENTS.get(key):
-        cmnt = comment.due_up(gamechat, due_up)
-        COMMENTS[key] = cmnt
+        try:
+            cmnt = comment.due_up(gamechat, due_up)
+            COMMENTS[key] = cmnt
+        except comment.DataObjectError as err:
+            logging.error(err)
 
 
 def play_by_play(game_pk: str, gamechat: praw.models.Submission):
@@ -56,11 +60,17 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
         if not play_result:
             continue
         if play_result == 'strikeout':
-            cmnt = comment.strikeout(gamechat, play)
-            COMMENTS[key] = cmnt
+            try:
+                cmnt = comment.strikeout(gamechat, play)
+                COMMENTS[key] = cmnt
+            except comment.DataObjectError as err:
+                logging.error(err)
         elif play_result == 'home run':
-            cmnt = comment.homerun(gamechat, play)
-            COMMENTS[key] = cmnt
+            try:
+                cmnt = comment.homerun(gamechat, play)
+                COMMENTS[key] = cmnt
+            except comment.DataObjectError as err:
+                logging.error(err)
 
 
 def main():
