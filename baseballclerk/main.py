@@ -99,8 +99,8 @@ def main():
         game_pk = game_thread['game_pk']
         gamechat = reddit.submission(game_thread['post_id'])
 
-        due_up(game_pk, gamechat)
         play_by_play(game_pk, gamechat)
+        due_up(game_pk, gamechat)
 
     for item in reddit.inbox.unread():
         if isinstance(item, praw.models.Comment):
