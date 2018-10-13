@@ -62,13 +62,14 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
 
         event = play['playEvents'][-1]
         pitch_type = event['details']['type']['description']
+        pitch_speed = event['pitchData']['startSpeed']
         speed = event['hitData']['launchSpeed']
         angle = event['hitData']['launchAngle']
         distance = event['hitData']['totalDistance']
     except (IndexError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"# HR\n\n**{batter}** {random.choice(DONGER_VERBS)} a {pitch_type} from {pitcher} for a **{runs}-run** home run.\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**.\n\n{_BYLINE}"
+    body = f"# HR\n\n**{batter}** {random.choice(DONGER_VERBS)} a **{pitch_speed} mph {pitch_type}** from **{pitcher}** for a **{runs}-run** home run.\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
