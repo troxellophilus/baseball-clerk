@@ -4,7 +4,7 @@ from typing import Union
 import praw
 
 
-_BYLINE = "_________\n\n^^^Bleep ^^^bloop ^^^I'm ^^^a ^^^boot."
+_BYLINE = "_________\n\n^^^Bleep ^^^bloop ^^^I'm ^^^a ^^^boot. ^^^[Bug?](https://github.com/troxellophilus/baseball-clerk/issues)"
 
 
 def _build_obj(comment: praw.models.Comment):
