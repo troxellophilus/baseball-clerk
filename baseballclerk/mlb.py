@@ -35,9 +35,12 @@ def due_up(game_pk: str) -> dict:
 
     inning = linescore['currentInning']
     inning_half = linescore['inningHalf']
-    if linescore.get('inningState') == 'end':
+    state = linescore.get('inningState').lower()
+    if state == 'end':
         inning += 1
         inning_half = 'Top'
+    elif state == 'middle':
+        inning_half = 'Bottom'
 
     due_up = {
         'inning': inning,
