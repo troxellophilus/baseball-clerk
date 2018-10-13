@@ -1,4 +1,5 @@
 import random
+import time
 from typing import Union
 
 import praw
@@ -8,6 +9,7 @@ _BYLINE = "_________\n\n^^^Bleep ^^^bloop ^^^I'm ^^^a ^^^boot. ^^^[Bug?](https:/
 
 
 def _build_obj(comment: praw.models.Comment):
+    time.sleep(2)
     return {
         'subreddit': comment.subreddit.display_name,
         'comment_id': comment.id,
