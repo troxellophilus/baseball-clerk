@@ -34,10 +34,15 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
         speed = event['pitchData']['startSpeed']
+        nasty = event['pitchData'].get('nastyFactor')
+        if nasty:
+            nasty_str = f"Nasty Factor: **{nasty}**."
+        else:
+            nasty_str = ''
     except (KeyError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n{_BYLINE}"
+    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}. {nasty_str}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
