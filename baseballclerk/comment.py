@@ -57,7 +57,7 @@ DONGER_VERBS = [
     'rips',
     'hammers',
     'socks',
-    'unleashes'
+    'nails'
 ]
 
 
