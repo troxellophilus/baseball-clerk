@@ -86,9 +86,6 @@ def main():
     exclude = args.exclude
     subreddits = args.subreddits
 
-    if subreddits and exclude:
-        subreddits = list(set(subreddits) - set(exclude))
-
     # Connect the datastore and create tables if not existing.
     datastore.connect('BaseballClerk.db')
     EVENTS.create_if_needed()
@@ -96,7 +93,7 @@ def main():
 
     reddit = praw.Reddit(praw_bot)
 
-    for game_thread in baseballbot.active_game_threads(reddit, subreddits):
+    for game_thread in baseballbot.active_game_threads(reddit, subreddits, exclude):
         game_pk = game_thread['game_pk']
         gamechat = reddit.submission(game_thread['post_id'])
 
