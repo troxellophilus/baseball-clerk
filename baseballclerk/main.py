@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 import os
+import time
 from typing import Tuple
 
 import praw
@@ -101,6 +102,8 @@ def main():
 
         play_by_play(game_pk, gamechat)
         due_up(game_pk, gamechat)
+
+        time.sleep(2)
 
     for item in reddit.inbox.unread():
         if isinstance(item, praw.models.Comment):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 from datetime import timezone
 from functools import lru_cache
 from typing import List
@@ -30,7 +31,7 @@ def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None) -> Li
             continue
         if game_thread['status'] != 'Posted':
             continue
+        if datetime.fromisoformat(game_thread['starts_at']) > (datetime.now(timezone.utc) - timedelta(seconds=600)):
+            continue
         active.append(game_thread)
-    if not active:
-        raise NoActiveGameError()
     return active
