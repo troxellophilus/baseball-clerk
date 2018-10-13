@@ -31,7 +31,7 @@ def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None) -> Li
             continue
         if game_thread['status'] != 'Posted':
             continue
-        if datetime.fromisoformat(game_thread['starts_at']) > (datetime.now(timezone.utc) - timedelta(seconds=600)):
+        if (datetime.fromisoformat(game_thread['starts_at']) - timedelta(seconds=600)) > datetime.now(timezone.utc):
             continue
         active.append(game_thread)
     return active
