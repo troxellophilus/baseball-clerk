@@ -87,7 +87,7 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     except (IndexError, AttributeError) as err:
         raise DataObjectError(err)
 
-    batters_up_str = '\n  '.join(batters_up)
+    batters_up_str = '\n\n'.join(batters_up)
     body = f"**Due Up ({half[:3]} {inning})**\n\n{batters_up_str}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
