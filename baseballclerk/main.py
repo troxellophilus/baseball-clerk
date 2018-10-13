@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import logging
 import os
 from typing import Tuple
@@ -50,6 +51,11 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
         # Update stored play.
         key = f"play-{game_pk}-{gamechat.subreddit.display_name}-{idx}"
         EVENTS[key] = play
+
+        # Skip if it isn't fresh.
+        end_time = datetime.datetime.fromisoformat(play['playEndTime'])
+        if (datetime.datetime.now(datetime.timezone.utc) - end_time).seconds > 300:
+            continue
 
         # Skip if we've already commented on this play.
         if COMMENTS.get(key):

@@ -31,10 +31,11 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
         speed = event['pitchData']['startSpeed']
+        nasty = event['pitchData']['nastyFactor']
     except (IndexError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-2 count with a {speed} mph {pitch_type}."
+    body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-2 count with a {speed} mph {pitch_type} (nasty factor: {nasty})."
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
