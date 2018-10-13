@@ -33,7 +33,7 @@ def _get_linescore(game_pk: str) -> dict:
 def due_up(game_pk: str) -> dict:
     linescore = _get_linescore(game_pk)
 
-    inning = linescore['inning'] + 1
+    inning = linescore['currentInning']
     inning_half = linescore['inningHalf']
     if linescore.get('inningState') == 'end':
         inning += 1

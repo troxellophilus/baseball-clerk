@@ -28,10 +28,9 @@ def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None) -> Li
     for game_thread in _get_game_threads():
         if subreddits and game_thread['subreddit']['name'] not in subreddits:
             continue
-        posts_at = datetime.fromisoformat(game_thread['posts_at'])
-        if datetime.now(timezone.utc) < posts_at:
+        if game_thread['status'] != 'Posted':
             continue
         active.append(game_thread)
-    else:
+    if not active:
         raise NoActiveGameError()
     return active

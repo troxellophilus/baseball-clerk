@@ -19,13 +19,13 @@ COMMENTS = datastore.Table('comment')
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--praw-bot', default='baseballclerk', help="Name of oauth config in praw.ini file.")
+    parser.add_argument('--praw-bot', default='BaseballClerk', help="Name of oauth config in praw.ini file.")
 
     def subreddits_type(arg: str):
         if arg.lower() == 'all':
             return None
         else:
-            return [s.trim() for s in arg.split(',')]
+            return [s.strip() for s in arg.split(',')]
 
     parser.add_argument('-e', '--exclude', type=subreddits_type, help="Comma separated list of subreddits to exclude.")
     parser.add_argument('subreddits', type=subreddits_type, help="Comma separated list of subreddits to run against, or 'all'")
@@ -53,8 +53,8 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
         EVENTS[key] = play
 
         # Skip if it isn't fresh.
-        end_time = datetime.datetime.fromisoformat(play['playEndTime'])
-        if (datetime.datetime.now(datetime.timezone.utc) - end_time).seconds > 300:
+        end_time = datetime.datetime.fromisoformat(play['playEndTime'].rstrip('Z'))
+        if (datetime.datetime.utcnow() - end_time).seconds > 300:
             continue
 
         # Skip if we've already commented on this play.
@@ -89,7 +89,7 @@ def main():
         subreddits = list(set(subreddits) - set(exclude))
 
     # Connect the datastore and create tables if not existing.
-    datastore.connect('BaseballClerk')
+    datastore.connect('BaseballClerk.db')
     EVENTS.create_if_needed()
     COMMENTS.create_if_needed()
 
@@ -104,7 +104,10 @@ def main():
 
     for item in reddit.inbox.unread():
         if isinstance(item, praw.models.Comment):
-            comment.text_face(item)
+            key = f"textface-{item.id}"
+            cmnt = comment.text_face(item)
+            item.mark_read()
+            COMMENTS[key] = cmnt
 
 
 if __name__ == '__main__':

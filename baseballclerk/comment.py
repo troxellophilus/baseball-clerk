@@ -4,6 +4,9 @@ from typing import Union
 import praw
 
 
+_BYLINE = "_________\n\n^^^Bleep ^^^bloop ^^^I'm ^^^a ^^^boot."
+
+
 def _build_obj(comment: praw.models.Comment):
     return {
         'subreddit': comment.subreddit.display_name,
@@ -23,19 +26,18 @@ class DataObjectError(_Err):
 
 def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     try:
-        pitcher = play.data['matchup']['pitcher']['fullName']
-        batter = play.data['matchup']['batter']['fullName']
+        pitcher = play['matchup']['pitcher']['fullName']
+        batter = play['matchup']['batter']['fullName']
 
-        event = play.data['playEvents'][-1]
+        event = play['playEvents'][-1]
         k = 'K' if event['details']['code'].lower() == 's' else 'ꓘ'
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
         speed = event['pitchData']['startSpeed']
-        nasty = event['pitchData']['nastyFactor']
-    except (IndexError, AttributeError) as err:
+    except (KeyError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"**{k}**  {pitcher} strikes out {batter} on a {count_b}-2 count with a {speed} mph {pitch_type} (nasty factor: {nasty})."
+    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
@@ -56,7 +58,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     try:
         pitcher = play['matchup']['pitcher']['fullName']
         batter = play['matchup']['batter']['fullName']
-        runs = play['results']['rbi']
+        runs = play['result']['rbi']
 
         event = play['playEvents'][-1]
         pitch_type = event['details']['type']['description']
@@ -66,7 +68,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     except (IndexError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"**HOME RUN**  {batter} {random.choice(DONGER_VERBS)} a {pitch_type} from {pitcher} {distance} ft for a {runs}-run home run.\n\nLaunch Speed: **{speed}** mph\n\nLaunch Angle: **{angle}**°"
+    body = f"# HR\n\n**{batter}** {random.choice(DONGER_VERBS)} a {pitch_type} from {pitcher} for a **{runs}-run** home run.\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
@@ -85,7 +87,8 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     except (IndexError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"**Due Up ({half} {inning})**  {', '.join(batters_up)}"
+    batters_up_str = '\n  '.join(batters_up)
+    body = f"**Due Up ({half[:3]} {inning})**\n\n{batters_up_str}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)

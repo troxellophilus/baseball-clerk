@@ -26,7 +26,7 @@ def read(table: str, key: str):
     _safety_first(table)
     with _CON:
         cur = _CON.cursor()
-        cur.execute(f'SELECT * FROM {table} WHERE key = ?', key)
+        cur.execute(f'SELECT * FROM {table} WHERE key = ?', (key,))
         row = cur.fetchone()
     return row
 
@@ -40,7 +40,7 @@ def create_table(table: str):
 def write(table: str, key: str, data: str):
     _safety_first(table)
     with _CON:
-        _CON.execute(f'INSERT INTO {table}(key) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET data=excluded.data;', key, data)
+        _CON.execute(f'INSERT OR REPLACE INTO {table}(key, data) VALUES(?, ?);', (key, data))
 
 
 def keys(table: str) -> Generator:
@@ -67,7 +67,7 @@ def count(table: str) -> int:
 def delete(table: str, key: str):
     _safety_first(table)
     with _CON:
-        _CON.execute(f'DELETE FROM {table} WHERE key = ?;', key)
+        _CON.execute(f'DELETE FROM {table} WHERE key = ?;', (key,))
 
 
 class Table(MutableMapping):
@@ -82,18 +82,19 @@ class Table(MutableMapping):
     def __getitem__(self, key):
         try:
             item = self._buf[key]
-        except IndexError:
+        except KeyError:
             row = read(self.table_name, key)
+            if not row:
+                raise KeyError
             item = self._buf[key] = json.dumps(row[1])
         return item
 
-    def get(self, key, default=None):
-        try:
-            obj = self[key]
-        except sqlite3.Error as err:
-            logging.error(err)
-            return default
-        return obj
+    # def get(self, key, default=None):
+    #     try:
+    #         obj = self[key]
+    #     except KeyError:
+    #         return default
+    #     return obj
 
     def __setitem__(self, key, item):
         write(self.table_name, key, json.dumps(item))
