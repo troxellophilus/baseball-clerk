@@ -103,7 +103,7 @@ def main():
         time.sleep(2)
 
     for item in reddit.inbox.unread():
-        if isinstance(item, praw.models.Comment):
+        if isinstance(item, praw.models.Comment) and 'baseballclerk' in item.body.lower():
             key = f"textface-{item.id}"
             cmnt = comment.text_face(item)
             item.mark_read()
