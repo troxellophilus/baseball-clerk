@@ -1,17 +1,15 @@
-from functools import lru_cache
 import json
 import os
 from typing import List
 
 import requests
 
+from baseballclerk import util
 
-@lru_cache()
+
 def _get_path(path: str) -> dict:
     url = f"https://statsapi.mlb.com{path}"
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()
+    return util.cached_request_json(url)
 
 
 def _get_gumbo(game_pk: str) -> dict:
@@ -23,11 +21,6 @@ def completed_plays(game_pk: str) -> List[dict]:
     gumbo = _get_gumbo(game_pk)
     plays = gumbo.get('liveData', {}).get('plays', {}).get('allPlays', [])
     return [p for p in plays if p['about']['isComplete']]
-
-
-def _get_linescore(game_pk: str) -> dict:
-    path = f"/api/v1/game/{game_pk}/linescore"
-    return _get_path(path)
 
 
 def due_up(game_pk: str) -> dict:

@@ -1,27 +1,17 @@
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from functools import lru_cache
 from typing import List
 
 import praw
-import requests
+
+from baseballclerk import util
 
 
-class _Error(Exception):
-    pass
-
-
-class NoActiveGameError(_Error):
-    pass
-
-
-@lru_cache()
 def _get_game_threads():
     url = "http://baseballbot.io/game_threads.json"
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()['data']
+    data = util.cached_request_json(url)
+    return data['data']
 
 
 def active_game_threads(reddit: praw.Reddit, subreddits: List[str] = None, exclude: List[str] = None) -> List[dict]:

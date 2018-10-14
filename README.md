@@ -6,7 +6,7 @@ https://baseballbot.io
 
 ## To-Do
 
-* better user agent in requests
+* ~~better user agent in requests~~
 * ~~due up~~
 * ~~text faces~~
 * ~~run against all baseballbot run threads rather than just one subreddit?~~

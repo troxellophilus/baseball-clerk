@@ -6,7 +6,6 @@ import time
 from typing import Tuple
 
 import praw
-import requests
 
 from baseballclerk import baseballbot
 from baseballclerk import comment
