@@ -31,15 +31,20 @@ def _get_linescore(game_pk: str) -> dict:
 
 
 def due_up(game_pk: str) -> dict:
-    linescore = _get_linescore(game_pk)
+    gumbo = _get_gumbo(game_pk)
 
+    game_state = gumbo['gameData']['status']['statusCode'].lower()
+    if game_state == 'f':
+        return None
+
+    linescore = gumbo['liveData']['linescore']
     inning = linescore['currentInning']
     inning_half = linescore['inningHalf']
-    state = linescore.get('inningState').lower()
-    if state == 'end':
+    inning_state = linescore.get('inningState').lower()
+    if inning_state == 'end':
         inning += 1
         inning_half = 'Top'
-    elif state == 'middle':
+    elif inning_state == 'middle':
         inning_half = 'Bottom'
 
     due_up = {

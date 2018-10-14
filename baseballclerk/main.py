@@ -37,8 +37,8 @@ def due_up(game_pk: str, gamechat: praw.models.Submission):
     """Post gamechat linescore updates (due up batters, pitching changes, substitutions, etc.)."""
     due_up = mlb.due_up(game_pk)
     key = f"dueup-{game_pk}-{gamechat.subreddit.display_name}-{due_up['inning']}-{due_up['inningHalf']}"
-    EVENTS[key] = due_up
     if due_up and not COMMENTS.get(key):
+        EVENTS[key] = due_up
         try:
             cmnt = comment.due_up(gamechat, due_up)
             COMMENTS[key] = cmnt
