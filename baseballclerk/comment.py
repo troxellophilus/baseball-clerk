@@ -92,11 +92,43 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
             hand = batter['batSide']
             name = batter['fullName']
             batters_up.append(f"{hand} {name}")
-    except (IndexError, AttributeError) as err:
+    except KeyError as err:
         raise DataObjectError(err)
 
     batters_up_str = '\n\n'.join(batters_up)
     body = f"**Due Up ({half[:3]} {inning})**\n\n{batters_up_str}\n\n{_BYLINE}"
+    comment = gamechat.reply(body)
+
+    return _build_obj(comment)
+
+
+def robbed(gamechat: praw.models.Submission, evo: dict):
+    try:
+        desc = evo['des']
+        speed = evo['hit_speed']
+        angle = evo['hit_angle']
+        distance = evo['hit_distance']
+        xba = evo['xba']
+    except KeyError as err:
+        raise DataObjectError(err)
+
+    body = f"**Robbed**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
+    comment = gamechat.reply(body)
+
+    return _build_obj(comment)
+
+
+def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
+    try:
+        desc = evo['des']
+        speed = evo['hit_speed']
+        angle = evo['hit_angle']
+        distance = evo['hit_distance']
+        xba = evo['xba']
+    except KeyError as err:
+        raise DataObjectError(err)
+
+    body = f"**Looks like a line drive in the box score...**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
     comment = gamechat.reply(body)
 
     return _build_obj(comment)

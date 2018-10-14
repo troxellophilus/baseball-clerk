@@ -1,9 +1,11 @@
 from setuptools import setup, find_packages
 
+from baseballclerk import __version__ as VERSION
+
 
 setup(
     name='baseballclerk',  # Required
-    version='0.1.0',  # Required
+    version=VERSION,  # Required
     description='Baseball play by play and more for Reddit.',  # Optional
     url='https://gitlab.com/dtrox/baseball-clerk',  # Optional
     author='Drew Troxell',  # Optional

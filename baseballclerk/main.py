@@ -11,6 +11,7 @@ from baseballclerk import baseballbot
 from baseballclerk import comment
 from baseballclerk import datastore
 from baseballclerk import mlb
+from baseballclerk import savant
 
 
 EVENTS = datastore.Table('event')
@@ -74,6 +75,35 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
         elif play_result == 'home run':
             try:
                 cmnt = comment.homerun(gamechat, play)
+                COMMENTS[key] = cmnt
+            except comment.DataObjectError as err:
+                logging.error(err)
+
+
+def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
+    for idx, evo in enumerate(savant.exit_velocities(game_pk)):
+        # Update stored evo.
+        key = f"evo-{game_pk}-{gamechat.subreddit.display_name}-{idx}"
+        EVENTS[key] = evo
+
+        # Skip if we've already commented on this play.
+        if COMMENTS.get(key):
+            continue
+
+        # Comment for the play if necessary.
+        if not ('xba' in evo and 'is_bip_out' in evo and evo.get('des')):
+            continue
+        xba = int(evo['xba'])
+        is_bip_out = evo['is_bip_out'].lower() == 'y'
+        if xba > 80 and is_bip_out:
+            try:
+                cmnt = comment.robbed(gamechat, evo)
+                COMMENTS[key] = cmnt
+            except comment.DataObjectError as err:
+                logging.error(err)
+        elif xba < 10 and not is_bip_out:
+            try:
+                cmnt = comment.boxscore_linedrive(gamechat, evo)
                 COMMENTS[key] = cmnt
             except comment.DataObjectError as err:
                 logging.error(err)
