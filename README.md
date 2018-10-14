@@ -20,8 +20,8 @@ https://baseballbot.io
 * docstrings
 * ~~active game threads only~~
 * pitching changes & substitutions
-* hit expectancy ('great play')
+* ~~hit expectancy ('great play')~~
 * stats command
 * replay command (default response or command?)
-* allow for alternate praw ini oauth credentials per subreddit
+* ~~allow for alternate praw ini oauth credentials per subreddit~~
 * ~~license~~
