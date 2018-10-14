@@ -5,7 +5,7 @@ from typing import Union
 import praw
 
 
-_BYLINE = "^^^Baseball ^^^Clerk ^^^v0.1 ^^^[Bug?](https://github.com/troxellophilus/baseball-clerk/issues)"
+_BYLINE = "^^^[Bug?](https://github.com/troxellophilus/baseball-clerk/issues)"
 
 
 def _build_obj(comment: praw.models.Comment):
