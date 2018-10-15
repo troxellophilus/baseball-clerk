@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import time
-from typing import List,Tuple
+from typing import Dict, List, Tuple
 
 import praw
 
@@ -20,21 +20,15 @@ EVENTS = datastore.Table('event')
 COMMENTS = datastore.Table('comment')
 
 
-@dataclass
-class _Config(object):
-
-    subreddits: List[dict]
-
-    @classmethod
-    def from_path(cls, filepath: str):
-        with open(filepath) as conf_fo:
-            conf = json.load(conf_fo)
-        return cls(**conf)
-
-
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', type=_Config.from_path, help="Path to a local configuration JSON file.")
+
+    def config_from_path(filepath: str):
+        with open(filepath) as conf_fo:
+            config = json.load(conf_fo)
+        return config
+
+    parser.add_argument('config', type=config_from_path, help="Path to a local configuration JSON file.")
     return parser.parse_args()
 
 
@@ -123,15 +117,20 @@ def main():
     EVENTS.create_if_needed()
     COMMENTS.create_if_needed()
 
-    bots_and_game_threads = []
+    # Build list of (subreddit_config: dict, game_thread: dict) tuples.
+    subreddit_configs_and_game_threads = []
     for game_thread in baseballbot.active_game_threads():
         subreddit_name = game_thread['subreddit']['name']
-        if subreddit_name in config.subreddits:
-            praw_bot = config.subreddits[subreddit_name]['praw_bot']
-            bots_and_game_threads.append((praw_bot, game_thread))
+        if subreddit_name in config['subreddits']:
+            subreddit_config = config['subreddits'][subreddit_name]
+            subreddit_configs_and_game_threads.append((subreddit_config, game_thread))
 
-    for praw_bot, game_thread in bots_and_game_threads:
-        reddit = praw.Reddit(praw_bot)
+    for game_thread in baseballbot.active_game_threads():
+        subreddit_config = config['subreddits'].get(game_thread['subreddit']['name'])
+        if not subreddit_config:
+            continue
+
+        reddit = praw.Reddit(subreddit_config.praw_bot)
 
         game_pk = game_thread['game_pk']
         gamechat = reddit.submission(game_thread['post_id'])
@@ -141,13 +140,13 @@ def main():
 
         time.sleep(2)
 
-    for praw_bot in set(b for b, _ in bots_and_game_threads):
-        reddit = praw.Reddit(praw_bot)
+    for subreddit_config in config['subreddits']:
+        reddit = praw.Reddit(subreddit_config.praw_bot)
 
         for item in reddit.inbox.unread():
             if isinstance(item, praw.models.Comment) and 'baseballclerk' in item.body.lower():
                 key = f"textface-{item.id}"
-                cmnt = comment.text_face(item)
+                cmnt = comment.default_mention_reply(item, subreddit_config.default_replies)
                 item.mark_read()
                 COMMENTS[key] = cmnt
 

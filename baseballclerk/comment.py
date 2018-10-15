@@ -1,6 +1,6 @@
 import random
 import time
-from typing import Union
+from typing import List, Union
 
 import praw
 
@@ -134,17 +134,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     return _build_obj(comment)
 
 
-TEXT_FACES = [
-    '(✿◠‿◠)',
-    '(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧',
-    '(◡‿◡✿)',
-    '( ́ ◕◞ε◟◕`)',
-    '(｡◕‿◕｡)',
-    '(☞ﾟ∀ﾟ)☞'
-]
-
-
-def text_face(message: praw.models.Comment) -> dict:
-    body = f"{random.choice(TEXT_FACES)}"
+def default_mention_reply(message: praw.models.Comment, choices: List[str]) -> dict:
+    body = f"{random.choice(choices)}"
     comment = message.reply(body)
     return _build_obj(comment)
