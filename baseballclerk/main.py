@@ -117,14 +117,6 @@ def main():
     EVENTS.create_if_needed()
     COMMENTS.create_if_needed()
 
-    # Build list of (subreddit_config: dict, game_thread: dict) tuples.
-    subreddit_configs_and_game_threads = []
-    for game_thread in baseballbot.active_game_threads():
-        subreddit_name = game_thread['subreddit']['name']
-        if subreddit_name in config['subreddits']:
-            subreddit_config = config['subreddits'][subreddit_name]
-            subreddit_configs_and_game_threads.append((subreddit_config, game_thread))
-
     for game_thread in baseballbot.active_game_threads():
         subreddit_config = config['subreddits'].get(game_thread['subreddit']['name'])  # type: dict
         if not subreddit_config:
@@ -136,6 +128,7 @@ def main():
         gamechat = reddit.submission(game_thread['post_id'])
 
         play_by_play(game_pk, gamechat)
+        exit_velocities(game_pk, gamechat)
         due_up(game_pk, gamechat)
 
         time.sleep(2)
