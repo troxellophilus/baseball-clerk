@@ -126,11 +126,11 @@ def main():
             subreddit_configs_and_game_threads.append((subreddit_config, game_thread))
 
     for game_thread in baseballbot.active_game_threads():
-        subreddit_config = config['subreddits'].get(game_thread['subreddit']['name'])
+        subreddit_config = config['subreddits'].get(game_thread['subreddit']['name'])  # type: dict
         if not subreddit_config:
             continue
 
-        reddit = praw.Reddit(subreddit_config.praw_bot)
+        reddit = praw.Reddit(subreddit_config['praw_bot'])
 
         game_pk = game_thread['game_pk']
         gamechat = reddit.submission(game_thread['post_id'])
@@ -140,13 +140,13 @@ def main():
 
         time.sleep(2)
 
-    for subreddit_config in config['subreddits']:
-        reddit = praw.Reddit(subreddit_config.praw_bot)
+    for subreddit_config in config['subreddits'].values():
+        reddit = praw.Reddit(subreddit_config['praw_bot'])
 
         for item in reddit.inbox.unread():
             if isinstance(item, praw.models.Comment) and 'baseballclerk' in item.body.lower():
                 key = f"textface-{item.id}"
-                cmnt = comment.default_mention_reply(item, subreddit_config.default_replies)
+                cmnt = comment.default_mention_reply(item, subreddit_config['default_replies'])
                 item.mark_read()
                 COMMENTS[key] = cmnt
 
