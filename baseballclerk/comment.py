@@ -36,15 +36,13 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
         speed = event['pitchData']['startSpeed']
-        nasty = event['pitchData'].get('nastyFactor')
-        if nasty:
-            nasty_str = f"Nasty Factor: **{nasty}**."
-        else:
-            nasty_str = ''
+
+        pitch_details = [e['details'] for e in play['playEvents'] if 'pitchData' in e]
+        sequence = ', '.join(f"{d['type']['code']} *({d['code'].lower()})*" for d in pitch_details)
     except (KeyError, AttributeError) as err:
         raise DataObjectError(err)
 
-    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}. {nasty_str}\n\n{_BYLINE}"
+    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
@@ -73,7 +71,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
         speed = event['hitData']['launchSpeed']
         angle = event['hitData']['launchAngle']
         distance = event['hitData']['totalDistance']
-    except (IndexError, AttributeError) as err:
+    except (KeyError, AttributeError) as err:
         raise DataObjectError(err)
 
     body = f"# HR\n\n**{batter}** {random.choice(DONGER_VERBS)} a **{pitch_speed} mph {pitch_type}** from **{pitcher}** for a **{runs}-run** home run.\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**.\n\n{_BYLINE}"
@@ -128,7 +126,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     except KeyError as err:
         raise DataObjectError(err)
 
-    body = f"**Looks like a line drive in the box score...**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
+    body = f"*Looks like a line drive in the box score...*\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
