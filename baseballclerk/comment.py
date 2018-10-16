@@ -110,7 +110,7 @@ def robbed(gamechat: praw.models.Submission, evo: dict):
     except KeyError as err:
         raise DataObjectError(err)
 
-    body = f"**Robbed**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
+    body = f"**Robbed**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
@@ -126,7 +126,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     except KeyError as err:
         raise DataObjectError(err)
 
-    body = f"*Looks like a line drive in the box score...*\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***."
+    body = f"*Looks like a line drive in the box score...*\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
