@@ -134,10 +134,11 @@ def main():
         time.sleep(2)
 
     for subreddit_config in config['subreddits'].values():
-        reddit = praw.Reddit(subreddit_config['praw_bot'])
+        praw_bot = subreddit_config['praw_bot']
+        reddit = praw.Reddit(praw_bot)
 
         for item in reddit.inbox.unread():
-            if isinstance(item, praw.models.Comment) and 'baseballclerk' in item.body.lower():
+            if isinstance(item, praw.models.Comment) and praw_bot.lower() in item.body.lower():
                 key = f"textface-{item.id}"
                 cmnt = comment.default_mention_reply(item, subreddit_config['default_replies'])
                 item.mark_read()
