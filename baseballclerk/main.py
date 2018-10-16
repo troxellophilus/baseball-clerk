@@ -141,8 +141,8 @@ def main():
             if isinstance(item, praw.models.Comment) and praw_bot.lower() in item.body.lower():
                 key = f"textface-{item.id}"
                 cmnt = comment.default_mention_reply(item, subreddit_config['default_replies'])
-                item.mark_read()
                 COMMENTS[key] = cmnt
+            item.mark_read() # Keep the inbox clean.
 
 
 if __name__ == '__main__':
