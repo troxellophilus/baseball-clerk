@@ -32,7 +32,7 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         batter = play['matchup']['batter']['fullName']
 
         event = play['playEvents'][-1]
-        k = 'K' if event['details']['code'].lower() == 's' else 'ꓘ'
+        k = 'ꓘ' if event['details']['code'].lower() == 'c' else 'K'
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
         speed = event['pitchData']['startSpeed']
