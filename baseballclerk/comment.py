@@ -38,7 +38,7 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         speed = event['pitchData']['startSpeed']
 
         pitch_details = [e['details'] for e in play['playEvents'] if 'pitchData' in e]
-        sequence = ', '.join(f"{d['type']['code']} *({d['code'].lower()})*" for d in pitch_details)
+        sequence = ', '.join(f"{d['type']['code']} *({d['code'].strip('*').lower()})*" for d in pitch_details)
     except (KeyError, AttributeError) as err:
         raise DataObjectError(err)
 
