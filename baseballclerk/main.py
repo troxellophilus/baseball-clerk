@@ -94,13 +94,14 @@ def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
             continue
         xba = int(evo['xba'])
         is_bip_out = evo['is_bip_out'].lower() == 'y'
+        is_hit = evo.get('result', '').lower() in ('single', 'double', 'triple', 'home run')
         if xba > 75 and is_bip_out:
             try:
                 cmnt = comment.robbed(gamechat, evo)
                 COMMENTS[key] = cmnt
             except comment.DataObjectError as err:
                 logging.error(err)
-        elif xba < 15 and not is_bip_out:
+        elif xba < 15 and not is_bip_out and is_hit:
             try:
                 cmnt = comment.boxscore_linedrive(gamechat, evo)
                 COMMENTS[key] = cmnt
