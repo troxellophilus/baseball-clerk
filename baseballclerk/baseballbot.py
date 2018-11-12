@@ -5,8 +5,6 @@ from datetime import timedelta
 from datetime import timezone
 from typing import List
 
-import praw
-
 from baseballclerk import util
 
 

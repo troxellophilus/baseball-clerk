@@ -5,11 +5,9 @@ Interface for key-based primative dictionary persistence.
 
 from collections.abc import MutableMapping
 import json
-import logging
-import os
 import sqlite3
 import string
-from typing import Any, Generator
+from typing import Generator
 
 
 _CON = None  # type: sqlite3.Connection

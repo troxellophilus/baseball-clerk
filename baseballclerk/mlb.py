@@ -1,10 +1,6 @@
 """MLB statsapi requests."""
 
-import json
-import os
 from typing import List
-
-import requests
 
 from baseballclerk import util
 
