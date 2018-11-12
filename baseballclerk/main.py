@@ -1,13 +1,10 @@
 """Baseball Clerk live baseball updates for Reddit game threads."""
 
 import argparse
-from dataclasses import dataclass
 import datetime
 import json
 import logging
-import os
 import time
-from typing import Dict, List, Tuple
 
 import praw
 
