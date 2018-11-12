@@ -1,3 +1,5 @@
+"""MLB statsapi requests."""
+
 import json
 import os
 from typing import List
@@ -8,22 +10,40 @@ from baseballclerk import util
 
 
 def _get_path(path: str) -> dict:
+    """Cached request a statsapi url."""
     url = f"https://statsapi.mlb.com{path}"
     return util.cached_request_json(url)
 
 
 def _get_gumbo(game_pk: str) -> dict:
+    """Return a 'gumbo' live game feed."""
     path = f"/api/v1.1/game/{game_pk}/feed/live"
     return _get_path(path)
 
 
 def completed_plays(game_pk: str) -> List[dict]:
+    """List the gumbo completed plays for a game.
+
+    Args:
+        game_pk (str)
+
+    Returns:
+        List[dict]: The completed plays for the game.
+    """
     gumbo = _get_gumbo(game_pk)
     plays = gumbo.get('liveData', {}).get('plays', {}).get('allPlays', [])
     return [p for p in plays if p['about']['isComplete']]
 
 
 def due_up(game_pk: str) -> dict:
+    """Get live inning and due up batter data from gumbo.
+
+    Args:
+        game_pk (str)
+
+    Returns:
+        dict: Live inning and due up batter data.
+    """
     gumbo = _get_gumbo(game_pk)
 
     game_state = gumbo['gameData']['status']['statusCode'].lower()

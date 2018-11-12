@@ -1,3 +1,5 @@
+"""Helpers."""
+
 from functools import lru_cache
 
 import requests
@@ -5,6 +7,7 @@ import requests
 
 @lru_cache()
 def cached_request_json(url: str) -> dict:
+    """Send a get request to a url, LRU cached."""
     headers = {
         'User-Agent': 'BaseballClerk/0.1 (+https://github.com/troxellophilus/baseball-clerk)'
     }

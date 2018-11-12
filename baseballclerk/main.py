@@ -1,3 +1,5 @@
+"""Baseball Clerk live baseball updates for Reddit game threads."""
+
 import argparse
 from dataclasses import dataclass
 import datetime
@@ -80,6 +82,7 @@ def play_by_play(game_pk: str, gamechat: praw.models.Submission):
 
 
 def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
+    """Post gamechat announcements for BaseballSavant data (i.e. hit probability data)."""
     for idx, evo in enumerate(savant.exit_velocities(game_pk)):
         # Update stored evo.
         key = f"evo-{game_pk}-{gamechat.subreddit.display_name}-{idx}"
@@ -110,6 +113,7 @@ def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
 
 
 def main():
+    """Write and post new BaseballClerk comments."""
     args = _parse_args()
     config = args.config
 

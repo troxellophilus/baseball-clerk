@@ -1,3 +1,5 @@
+"""Reddit comment handler."""
+
 import random
 import time
 from typing import List, Union
@@ -9,6 +11,7 @@ _BYLINE = "^^^[Bug?](https://github.com/troxellophilus/baseball-clerk/issues)"
 
 
 def _build_obj(comment: praw.models.Comment):
+    """Build a datastore-able dict for a comment."""
     time.sleep(2)
     return {
         'subreddit': comment.subreddit.display_name,
@@ -23,10 +26,20 @@ class _Err(Exception):
 
 
 class DataObjectError(_Err):
+    """Error thrown when comment function cannot process data objects."""
     pass
 
 
 def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
+    """Post a comment to the game thread for a strikeout play.
+
+    Args:
+        gamechat (Submission): The destination game thread.
+        play (dict): The strikeout play data.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     try:
         pitcher = play['matchup']['pitcher']['fullName']
         batter = play['matchup']['batter']['fullName']
@@ -57,9 +70,19 @@ DONGER_VERBS = [
     'socks',
     'nails'
 ]
+"""List[str]: Constant set of verbs to choose from for home runs."""
 
 
 def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
+    """Post a comment to the game thread for a homerun play.
+
+    Args:
+        gamechat (Submission): The destination game thread.
+        play (dict): The homerun play data.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     try:
         pitcher = play['matchup']['pitcher']['fullName']
         batter = play['matchup']['batter']['fullName']
@@ -81,6 +104,15 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
 
 
 def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
+    """Post a comment to the game thread for the players due up.
+
+    Args:
+        gamechat (Submission): The destination game thread.
+        due_up (dict): The due up players data.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     try:
         inning = due_up['inning']
         half = due_up['inningHalf']
@@ -101,6 +133,15 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
 
 
 def robbed(gamechat: praw.models.Submission, evo: dict):
+    """Post a comment to the game thread for a robbed hit.
+
+    Args:
+        gamechat (Submission): The destination game thread.
+        evo (dict): The exit velocity data of the play.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     try:
         desc = evo['des']
         speed = evo['hit_speed']
@@ -117,6 +158,15 @@ def robbed(gamechat: praw.models.Submission, evo: dict):
 
 
 def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
+    """Post a comment to the game thread for a low hp hit.
+
+    Args:
+        gamechat (Submission): The destination game thread.
+        evo (dict): The exit velocity data of the play.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     try:
         desc = evo['des']
         speed = evo['hit_speed']
@@ -133,6 +183,15 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
 
 
 def default_mention_reply(message: praw.models.Comment, choices: List[str]) -> dict:
+    """Post a random selection of choices as a reply to a message.
+
+    Args:
+        message (Comment): The message to respond to.
+        choices (List[str]): The reply body options to choose from.
+
+    Returns:
+        dict: The posted comment metadata as a datastore-able dict.
+    """
     body = f"{random.choice(choices)}"
     comment = message.reply(body)
     return _build_obj(comment)

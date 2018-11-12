@@ -1,4 +1,7 @@
-"""NoSQLite3."""
+"""SQLite3 dictionary store.
+
+Interface for key-based primative dictionary persistence.
+"""
 
 from collections.abc import MutableMapping
 import json
@@ -13,16 +16,19 @@ _CON = None  # type: sqlite3.Connection
 
 
 def connect(database: str, *args, **kwargs):
+    """Connect the global SQLite3 database."""
     global _CON
     _CON = sqlite3.connect(database, *args, **kwargs)
 
 
 def _safety_first(table: str):
+    """Simple table-name injection protection."""
     if not all(c in string.ascii_letters + string.digits + '_' for c in table):
         raise ValueError('Bad table name.')
 
 
 def read(table: str, key: str):
+    """Read a single row by key."""
     _safety_first(table)
     with _CON:
         cur = _CON.cursor()
@@ -32,18 +38,21 @@ def read(table: str, key: str):
 
 
 def create_table(table: str):
+    """Create a table for key-dict storage."""
     _safety_first(table)
     with _CON:
         _CON.execute(f'CREATE TABLE IF NOT EXISTS {table}(key text PRIMARY KEY, data TEXT)')
 
 
 def write(table: str, key: str, data: str):
+    """Write data to a table."""
     _safety_first(table)
     with _CON:
         _CON.execute(f'INSERT OR REPLACE INTO {table}(key, data) VALUES(?, ?);', (key, data))
 
 
 def keys(table: str) -> Generator:
+    """Yield keys from a table."""
     _safety_first(table)
     with _CON:
         cur = _CON.cursor()
@@ -56,6 +65,7 @@ def keys(table: str) -> Generator:
 
 
 def count(table: str) -> int:
+    """Count rows in a table."""
     _safety_first(table)
     with _CON:
         cur = _CON.cursor()
@@ -65,18 +75,33 @@ def count(table: str) -> int:
 
 
 def delete(table: str, key: str):
+    """Delete a key from a table."""
     _safety_first(table)
     with _CON:
         _CON.execute(f'DELETE FROM {table} WHERE key = ?;', (key,))
 
 
 class Table(MutableMapping):
+    """A key-dict persistence table.
+
+    Works like a nested dictionary:
+        >>> table = Table('Person')
+        >>> table['David'] = {'name': 'David', 'age': 25, 'favoriteColor': 'blue'}
+        >>> david = table['David']
+        >>> try:
+        >>>     table['Sam']
+        >>> except KeyError:
+        >>>     print("Oh no")
+        >>> person = table.get('Sam', david)
+        >>> print(person)
+    """
 
     def __init__(self, name: str):
         self.table_name = name
         self._buf = {}
 
     def create_if_needed(self):
+        """Create the table on the database."""
         create_table(self.table_name)
 
     def __getitem__(self, key):
@@ -88,13 +113,6 @@ class Table(MutableMapping):
                 raise KeyError
             item = self._buf[key] = json.dumps(row[1])
         return item
-
-    # def get(self, key, default=None):
-    #     try:
-    #         obj = self[key]
-    #     except KeyError:
-    #         return default
-    #     return obj
 
     def __setitem__(self, key, item):
         write(self.table_name, key, json.dumps(item))
