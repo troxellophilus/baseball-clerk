@@ -7,7 +7,7 @@ from typing import List
 import praw
 
 
-_BYLINE = "^^^[Bug?](https://github.com/troxellophilus/baseball-clerk/issues)"
+_BYLINE = "^^^[⚾](https://github.com/troxellophilus/baseball-clerk/issues)"
 
 
 def _build_obj(comment: praw.models.Comment):
