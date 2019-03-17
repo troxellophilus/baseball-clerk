@@ -126,8 +126,8 @@ def main():
 
         reddit = praw.Reddit(subreddit_config['praw_bot'])
 
-        game_pk = game_thread['game_pk']
-        gamechat = reddit.submission(game_thread['post_id'])
+        game_pk = game_thread['gamePk']
+        gamechat = reddit.submission(game_thread['postId'])
 
         play_by_play(game_pk, gamechat)
         exit_velocities(game_pk, gamechat)
