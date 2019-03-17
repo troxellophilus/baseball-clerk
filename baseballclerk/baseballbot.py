@@ -8,14 +8,17 @@ from typing import List
 from baseballclerk import util
 
 
-def _get_game_threads() -> List[dict]:
+def _get_game_threads(subreddit: str = None) -> List[dict]:
     """Get game threads from BaseballBot."""
-    url = "http://baseballbot.io/game_threads.json"
+    if subreddit:
+        url = f"http://baseballbot.io/subreddits/{subreddit}/game_threads.json"
+    else:
+        url = "http://baseballbot.io/game_threads.json"
     data = util.cached_request_json(url)
     return data['data']
 
 
-def active_game_threads() -> List[dict]:
+def active_game_threads(subreddit: str = None) -> List[dict]:
     """Retrieve active game threads from BaseballBot.
 
     Filters out any inactive threads. A game thread is considered active
@@ -25,10 +28,10 @@ def active_game_threads() -> List[dict]:
         List[dict]: The active game threads objects.
     """
     active = []
-    for game_thread in _get_game_threads():
+    for game_thread in _get_game_threads(subreddit):
         if game_thread['status'] != 'Posted':
             continue
-        if (datetime.fromisoformat(game_thread['starts_at']) - timedelta(seconds=600)) > datetime.now(timezone.utc):
+        if (datetime.fromisoformat(game_thread['startsAt']) - timedelta(seconds=600)) > datetime.now(timezone.utc):
             continue
         active.append(game_thread)
     return active

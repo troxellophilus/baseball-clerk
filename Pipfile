@@ -4,8 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-praw = "*"
-requests = "*"
 baseballclerk = {editable = true, path = "."}
 
 [dev-packages]
