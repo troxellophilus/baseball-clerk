@@ -11,7 +11,7 @@ from baseballclerk import __version__
 def cached_request_json(url: str) -> dict:
     """Send a get request to a url, LRU cached."""
     headers = {
-        'User-Agent': 'BaseballClerk/{__version__} (+https://github.com/troxellophilus/baseball-clerk)'
+        'User-Agent': f'BaseballClerk/{__version__} (+https://github.com/troxellophilus/baseball-clerk)'
     }
     response = requests.get(url, headers=headers)
     response.raise_for_status()
