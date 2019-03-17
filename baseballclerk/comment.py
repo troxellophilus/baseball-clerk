@@ -53,7 +53,7 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         pitch_details = [e['details'] for e in play['playEvents'] if 'pitchData' in e]
         sequence = ', '.join(f"{d['type']['code']} *({d['code'].strip('*').lower()})*" for d in pitch_details)
     except (KeyError, AttributeError) as err:
-        raise DataObjectError(err)
+        raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
     body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
@@ -95,7 +95,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
         angle = event['hitData']['launchAngle']
         distance = event['hitData']['totalDistance']
     except (KeyError, AttributeError) as err:
-        raise DataObjectError(err)
+        raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
     body = f"# HR\n\n**{batter}** {random.choice(DONGER_VERBS)} a **{pitch_speed} mph {pitch_type}** from **{pitcher}** for a **{runs}-run** home run.\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
@@ -123,7 +123,7 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
             name = batter['fullName']
             batters_up.append(f"{hand} {name}")
     except KeyError as err:
-        raise DataObjectError(err)
+        raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
     batters_up_str = '\n\n'.join(batters_up)
     body = f"**Due Up ({half[:3]} {inning})**\n\n{batters_up_str}\n\n{_BYLINE}"
@@ -149,7 +149,7 @@ def robbed(gamechat: praw.models.Submission, evo: dict):
         distance = evo['hit_distance']
         xba = evo['xba']
     except KeyError as err:
-        raise DataObjectError(err)
+        raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
     body = f"**Robbed**\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
@@ -174,7 +174,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
         distance = evo['hit_distance']
         xba = evo['xba']
     except KeyError as err:
-        raise DataObjectError(err)
+        raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
     body = f"*Looks like a line drive in the box score...*\n\n{desc}\n\nLaunch Speed: **{speed} mph**. Launch Angle: **{angle}°**. Distance: **{distance} ft**. Hit Probability: ***{xba}%***.\n\n{_BYLINE}"
     comment = gamechat.reply(body)
