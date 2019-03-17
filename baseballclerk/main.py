@@ -111,6 +111,8 @@ def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
 
 def main():
     """Write and post new BaseballClerk comments."""
+    logging.basicConfig(format="%(levelname)s:%(module)s:%(filename)s:%(lineno)s:%(message)s")
+
     args = _parse_args()
     config = args.config
 
@@ -126,8 +128,8 @@ def main():
 
         reddit = praw.Reddit(subreddit_config['praw_bot'])
 
-        game_pk = game_thread['game_pk']
-        gamechat = reddit.submission(game_thread['post_id'])
+        game_pk = game_thread['gamePk']
+        gamechat = reddit.submission(game_thread['postId'])
 
         play_by_play(game_pk, gamechat)
         exit_velocities(game_pk, gamechat)
@@ -140,10 +142,17 @@ def main():
         reddit = praw.Reddit(praw_bot)
 
         for item in reddit.inbox.unread():
+            # Make sure it is fresh.
+            created_utc = datetime.datetime.fromtimestamp(item.created_utc)
+            if (datetime.datetime.utcnow() - created_utc).seconds > 600:
+                item.mark_read()
+                continue
+
             if isinstance(item, praw.models.Comment) and praw_bot.lower() in item.body.lower():
                 key = f"textface-{item.id}"
                 cmnt = comment.default_mention_reply(item, subreddit_config['default_replies'])
                 COMMENTS[key] = cmnt
+
             item.mark_read() # Keep the inbox clean.
 
 
