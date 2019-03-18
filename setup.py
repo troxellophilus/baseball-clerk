@@ -17,5 +17,5 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
-    install_requires=['praw', 'requests'],  # Optional
+    install_requires=['praw', 'requests']  # Optional
 )
