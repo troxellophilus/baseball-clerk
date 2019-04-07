@@ -23,7 +23,7 @@ def _parse_args():
     parser = argparse.ArgumentParser()
 
     def config_from_path(filepath: str):
-        with open(filepath) as conf_fo:
+        with open(filepath, encoding='utf-8') as conf_fo:
             config = json.load(conf_fo)
         return config
 
