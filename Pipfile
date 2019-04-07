@@ -4,7 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-baseballclerk = {editable = true, path = "."}
+baseballclerk = {editable = true,path = "."}
+backoff = "*"
 
 [dev-packages]
 pylint = "*"
