@@ -52,14 +52,25 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         k = 'ꓘ' if event['details']['code'].lower() == 'c' else 'K'
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
-        speed = event['pitchData']['startSpeed']
+
+        pitch_data = event['pitchData']
+        speed = pitch_data['startSpeed']
+
+        breaks = pitch_data.get('breaks', {})
+        spin_rate = breaks.get('spinRate')
+        break_length = breaks.get('breakLength')
 
         pitch_details = [e['details'] for e in play['playEvents'] if 'pitchData' in e]
         sequence = ', '.join(f"{d['type']['code']} *({d['code'].strip('*').lower()})*" for d in pitch_details)
     except (KeyError, AttributeError) as err:
         raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
-    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
+    if spin_rate and break_length:
+        break_details = f"Spin Rate: **{spin_rate} rpm**. Break Length: **{break_length} in**.\n\n"
+    else:
+        break_details = ''
+
+    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n{break_details}*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
