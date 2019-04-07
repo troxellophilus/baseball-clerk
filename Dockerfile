@@ -2,10 +2,10 @@ FROM python:3.7-slim-stretch
 
 RUN pip install pipenv
 
-COPY baseballclerk/*.py /usr/src/baseballclerk/baseballclerk/
-COPY Pipfile Pipfile.lock setup.py /usr/src/baseballclerk/
+WORKDIR /usr/local/src/baseballclerk
 
-WORKDIR /usr/src/baseballclerk
+COPY baseballclerk/*.py ./baseballclerk/
+COPY Pipfile Pipfile.lock setup.py ./
 
 RUN pipenv install --system --deploy
 
