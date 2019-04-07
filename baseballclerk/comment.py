@@ -4,10 +4,13 @@ import random
 import time
 from typing import List
 
+import backoff
 import praw
 
 
 _BYLINE = "^^^[⚾](https://github.com/troxellophilus/baseball-clerk/issues)"
+
+_MAX_TRIES=4
 
 
 def _build_obj(comment: praw.models.Comment):
@@ -30,6 +33,7 @@ class DataObjectError(_Err):
     pass
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     """Post a comment to the game thread for a strikeout play.
 
@@ -48,19 +52,31 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
         k = 'ꓘ' if event['details']['code'].lower() == 'c' else 'K'
         pitch_type = event['details']['type']['description']
         count_b = event['count']['balls']
-        speed = event['pitchData']['startSpeed']
+
+        pitch_data = event['pitchData']
+        speed = pitch_data['startSpeed']
+
+        breaks = pitch_data.get('breaks', {})
+        spin_rate = breaks.get('spinRate')
+        break_length = breaks.get('breakLength')
 
         pitch_details = [e['details'] for e in play['playEvents'] if 'pitchData' in e]
         sequence = ', '.join(f"{d['type']['code']} *({d['code'].strip('*').lower()})*" for d in pitch_details)
     except (KeyError, AttributeError) as err:
         raise DataObjectError(f"{err.__class__.__name__}: {err}")
 
-    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
+    if spin_rate and break_length:
+        break_details = f"Spin Rate: **{spin_rate} rpm**. Break Length: **{break_length} in**.\n\n"
+    else:
+        break_details = ''
+
+    body = f"# {k}\n\n**{pitcher}** strikes out **{batter}** on a **{count_b}-2** count with a **{speed} mph** {pitch_type}.\n\n{break_details}*Sequence ({len(pitch_details)}):* {sequence}\n\n{_BYLINE}"
     comment = gamechat.reply(body)
 
     return _build_obj(comment)
 
 
+# Constant set of verbs to choose from for home runs.
 DONGER_VERBS = [
     'cracks',
     'smashes',
@@ -70,9 +86,9 @@ DONGER_VERBS = [
     'socks',
     'nails'
 ]
-"""List[str]: Constant set of verbs to choose from for home runs."""
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     """Post a comment to the game thread for a homerun play.
 
@@ -103,6 +119,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     """Post a comment to the game thread for the players due up.
 
@@ -132,6 +149,7 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def robbed(gamechat: praw.models.Submission, evo: dict):
     """Post a comment to the game thread for a robbed hit.
 
@@ -157,6 +175,7 @@ def robbed(gamechat: praw.models.Submission, evo: dict):
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     """Post a comment to the game thread for a low hp hit.
 
@@ -182,6 +201,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def default_mention_reply(message: praw.models.Comment, choices: List[str]) -> dict:
     """Post a random selection of choices as a reply to a message.
 
