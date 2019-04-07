@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0d9381de1809956ef35484e12dbea2b3bbf89dcda5743d05b267d47d66cfb9f2"
+            "sha256": "b0d38577ce44c1748824deeb16f083fa77513e1306a4d60d2368d648a1a51cb9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,14 @@
         ]
     },
     "default": {
+        "backoff": {
+            "hashes": [
+                "sha256:c7187f15339e775aec926dc6e5e42f8a3ad7d3c2b9a6ecae7b535000f70cd838",
+                "sha256:d340bb6f36d025c04214b8925112d8456970e5f28dda46e4f1133bf5c622cb0a"
+            ],
+            "index": "pypi",
+            "version": "==1.8.0"
+        },
         "baseballclerk": {
             "editable": true,
             "path": "."

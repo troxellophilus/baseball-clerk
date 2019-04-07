@@ -4,10 +4,13 @@ import random
 import time
 from typing import List
 
+import backoff
 import praw
 
 
 _BYLINE = "^^^[⚾](https://github.com/troxellophilus/baseball-clerk/issues)"
+
+_MAX_TRIES=4
 
 
 def _build_obj(comment: praw.models.Comment):
@@ -30,6 +33,7 @@ class DataObjectError(_Err):
     pass
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     """Post a comment to the game thread for a strikeout play.
 
@@ -61,6 +65,7 @@ def strikeout(gamechat: praw.models.Submission, play: dict) -> dict:
     return _build_obj(comment)
 
 
+# Constant set of verbs to choose from for home runs.
 DONGER_VERBS = [
     'cracks',
     'smashes',
@@ -70,9 +75,9 @@ DONGER_VERBS = [
     'socks',
     'nails'
 ]
-"""List[str]: Constant set of verbs to choose from for home runs."""
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     """Post a comment to the game thread for a homerun play.
 
@@ -103,6 +108,7 @@ def homerun(gamechat: praw.models.Submission, play: dict) -> dict:
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     """Post a comment to the game thread for the players due up.
 
@@ -132,6 +138,7 @@ def due_up(gamechat: praw.models.Submission, due_up: dict) -> dict:
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def robbed(gamechat: praw.models.Submission, evo: dict):
     """Post a comment to the game thread for a robbed hit.
 
@@ -157,6 +164,7 @@ def robbed(gamechat: praw.models.Submission, evo: dict):
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     """Post a comment to the game thread for a low hp hit.
 
@@ -182,6 +190,7 @@ def boxscore_linedrive(gamechat: praw.models.Submission, evo: dict):
     return _build_obj(comment)
 
 
+@backoff.on_exception(backoff.expo, praw.exceptions.APIException, max_tries=_MAX_TRIES, jitter=None)
 def default_mention_reply(message: praw.models.Comment, choices: List[str]) -> dict:
     """Post a random selection of choices as a reply to a message.
 
