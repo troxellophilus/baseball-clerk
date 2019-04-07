@@ -23,7 +23,7 @@ def _parse_args():
     parser = argparse.ArgumentParser()
 
     def config_from_path(filepath: str):
-        with open(filepath) as conf_fo:
+        with open(filepath, encoding='utf-8') as conf_fo:
             config = json.load(conf_fo)
         return config
 
@@ -90,11 +90,13 @@ def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
             continue
 
         # Comment for the play if necessary.
-        if not ('xba' in evo and 'is_bip_out' in evo and evo.get('des')):
+        if not ('xba' in evo and 'is_bip_out' in evo and evo.get('des', '').strip()):
             continue
+
         xba = float(evo['xba'])
         is_bip_out = evo['is_bip_out'].lower() == 'y'
         is_hit = evo.get('result', '').lower() in ('single', 'double', 'triple', 'home run')
+
         if xba > 0.90 and is_bip_out:
             try:
                 cmnt = comment.robbed(gamechat, evo)
