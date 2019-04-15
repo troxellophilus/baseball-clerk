@@ -31,7 +31,15 @@ def active_game_threads(subreddit: str = None) -> List[dict]:
     for game_thread in _get_game_threads(subreddit):
         if game_thread['status'] != 'Posted':
             continue
-        if (datetime.fromisoformat(game_thread['startsAt']) - timedelta(seconds=600)) > datetime.now(timezone.utc):
+
+        starts_at = datetime.fromisoformat(game_thread['startsAt'])
+
+        if (starts_at - timedelta(seconds=600)) > datetime.now(timezone.utc):
             continue
+
+        if (datetime.now(timezone.utc) - starts_at).total_seconds() > 12 * 60 * 60:
+            continue
+
         active.append(game_thread)
+
     return active
