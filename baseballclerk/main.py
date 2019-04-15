@@ -34,6 +34,9 @@ def _parse_args():
 def due_up(game_pk: str, gamechat: praw.models.Submission):
     """Post gamechat linescore updates (due up batters, pitching changes, substitutions, etc.)."""
     due_up = mlb.due_up(game_pk)
+    if not due_up:
+        return
+
     key = f"dueup-{game_pk}-{gamechat.subreddit.display_name}-{due_up['inning']}-{due_up['inningHalf']}"
     if due_up and not COMMENTS.get(key):
         EVENTS[key] = due_up
