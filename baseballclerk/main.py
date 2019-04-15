@@ -163,7 +163,7 @@ def main():
 
         logger.info(json.dumps({
             'msg': "Running replies.",
-            'subreddit': game_thread['subreddit']['name']
+            'subreddit': subreddit_config['name']
         }))
 
         for item in reddit.inbox.unread():
