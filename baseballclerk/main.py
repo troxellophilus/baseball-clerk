@@ -113,10 +113,19 @@ def exit_velocities(game_pk: str, gamechat: praw.models.Submission):
 
 def main():
     """Write and post new BaseballClerk comments."""
-    logging.basicConfig(format="%(levelname)s:%(module)s:%(filename)s:%(lineno)s:%(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(module)s:%(filename)s:%(lineno)s:%(message)s")
+
+    logger = logging.getLogger(__name__)
 
     args = _parse_args()
     config = args.config
+
+    start_time = datetime.datetime.utcnow()
+    logger.info(json.dumps({
+        'msg': "Starting BaseballClerk.",
+        'subreddits': list(config['subreddits'].keys()),
+        'start_time': start_time.isoformat()
+    }))
 
     # Connect the datastore and create tables if not existing.
     datastore.connect('BaseballClerk.db')
@@ -127,6 +136,12 @@ def main():
         subreddit_config = config['subreddits'].get(game_thread['subreddit']['name'])  # type: dict
         if not subreddit_config:
             continue
+
+        logger.info(json.dumps({
+            'msg': "Running game thread.",
+            'subreddit': game_thread['subreddit']['name'],
+            'game_pk': game_thread['gamePk']
+        }))
 
         reddit = praw.Reddit(subreddit_config['praw_bot'])
 
@@ -143,6 +158,11 @@ def main():
         praw_bot = subreddit_config['praw_bot']
         reddit = praw.Reddit(praw_bot)
 
+        logger.info(json.dumps({
+            'msg': "Running replies.",
+            'subreddit': game_thread['subreddit']['name']
+        }))
+
         for item in reddit.inbox.unread():
             # Make sure it is fresh.
             created_utc = datetime.datetime.fromtimestamp(item.created_utc)
@@ -156,6 +176,16 @@ def main():
                 COMMENTS[key] = cmnt
 
             item.mark_read() # Keep the inbox clean.
+
+    end_time = datetime.datetime.utcnow()
+    elapsed = (end_time - start_time).total_seconds()
+    logger.info(json.dumps({
+        'msg': "Finished BaseballClerk.",
+        'subreddits': list(config['subreddits'].keys()),
+        'start_time': start_time.isoformat(),
+        'end_time': end_time.isoformat(),
+        'elapsed': elapsed
+    }))
 
 
 if __name__ == '__main__':
