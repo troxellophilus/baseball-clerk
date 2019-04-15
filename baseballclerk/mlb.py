@@ -43,7 +43,7 @@ def due_up(game_pk: str) -> dict:
     gumbo = _get_gumbo(game_pk)
 
     game_state = gumbo['gameData']['status']['statusCode'].lower()
-    if game_state == 'f':
+    if game_state in ('f', 's', 'di', 'd'):
         return None
 
     linescore = gumbo['liveData']['linescore']
