@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "baseball-clerk"
+name = "baseballclerk"
 version = "1.2.0"
 description = "Live baseball play-by-play comments and more for BaseballBot managed game threads on Reddit."
 authors = ["Drew Troxell <code@trox.space>"]
