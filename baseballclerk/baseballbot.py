@@ -11,9 +11,9 @@ from baseballclerk import util
 def _get_game_threads(subreddit: Optional[str] = None) -> List[dict]:
     """Get game threads from BaseballBot."""
     if subreddit:
-        url = f"http://baseballbot.io/subreddits/{subreddit}/game_threads.json"
+        url = f"https://baseballbot.io/subreddits/{subreddit}/game_threads.json"
     else:
-        url = "http://baseballbot.io/game_threads.json"
+        url = "https://baseballbot.io/game_threads.json"
     data = util.cached_request_json(url)
     return data["data"]
 
