@@ -12,6 +12,6 @@ COPY baseballclerk ./baseballclerk
 RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi
 
-WORKDIR /root/baseballclerk/
+WORKDIR /baseballclerk/
 
 ENTRYPOINT [ "python", "-OO", "-u", "-m", "baseballclerk" ]
