@@ -1,6 +1,6 @@
 """MLB statsapi requests."""
 
-from typing import List
+from typing import List, Optional
 
 from baseballclerk import util
 
@@ -27,11 +27,11 @@ def completed_plays(game_pk: str) -> List[dict]:
         List[dict]: The completed plays for the game.
     """
     gumbo = _get_gumbo(game_pk)
-    plays = gumbo.get('liveData', {}).get('plays', {}).get('allPlays', [])
-    return [p for p in plays if p['about']['isComplete']]
+    plays = gumbo.get("liveData", {}).get("plays", {}).get("allPlays", [])
+    return [p for p in plays if p["about"]["isComplete"]]
 
 
-def due_up(game_pk: str) -> dict:
+def due_up(game_pk: str) -> Optional[dict]:
     """Get live inning and due up batter data from gumbo.
 
     Args:
@@ -42,41 +42,43 @@ def due_up(game_pk: str) -> dict:
     """
     gumbo = _get_gumbo(game_pk)
 
-    game_state = gumbo['gameData']['status']['statusCode'].lower()
-    if game_state in ('f', 's', 'di', 'd'):
+    game_state = gumbo["gameData"]["status"]["statusCode"].lower()
+    if game_state in ("f", "s", "di", "d"):
         return None
 
-    linescore = gumbo['liveData']['linescore']
-    inning = linescore['currentInning']
-    inning_half = linescore['inningHalf']
-    inning_state = linescore.get('inningState').lower()
-    if inning_state == 'end':
-        inning += 1
-        inning_half = 'Top'
-    elif inning_state == 'middle':
-        inning_half = 'Bottom'
+    linescore = gumbo["liveData"]["linescore"]
+    inning = linescore["currentInning"]
+    inning_half = linescore["inningHalf"]
+    inning_state = linescore.get("inningState").lower()
 
-    due_up = {
-        'inning': inning,
-        'inningHalf': inning_half
-    }
+    if inning_state == "end":
+        inning += 1
+        inning_half = "Top"
+    elif inning_state == "middle":
+        inning_half = "Bottom"
+
+        # Check if the game is over by rule, even if the state doesn't show yet
+        if linescore["teams"]["home"]["runs"] > linescore["teams"]["away"]["runs"]:
+            return None
+
+    due_up = {"inning": inning, "inningHalf": inning_half}
 
     batter_profiles = [
-        _get_path(linescore['offense']['batter']['link'])['people'][0],
-        _get_path(linescore['offense']['onDeck']['link'])['people'][0],
-        _get_path(linescore['offense']['inHole']['link'])['people'][0]
+        _get_path(linescore["offense"]["batter"]["link"])["people"][0],
+        _get_path(linescore["offense"]["onDeck"]["link"])["people"][0],
+        _get_path(linescore["offense"]["inHole"]["link"])["people"][0],
     ]
 
     batters = []
     for profile in batter_profiles:
         batters.append(
             {
-                'fullName': profile['fullName'],
-                'primaryNumber': profile['primaryNumber'],
-                'batSide': profile['batSide']['code']
+                "fullName": profile["fullName"],
+                "primaryNumber": profile["primaryNumber"],
+                "batSide": profile["batSide"]["code"],
             }
         )
 
-    due_up['batters'] = batters
+    due_up["batters"] = batters
 
     return due_up

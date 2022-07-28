@@ -1,15 +1,17 @@
-FROM python:3.7-slim-stretch
+FROM python:3.9-slim
 
-RUN pip install pipenv
+RUN apt-get update && apt-get install git -y
 
-WORKDIR /usr/local/src/baseballclerk
+RUN python -m pip install --upgrade pip && pip install poetry
 
-COPY baseballclerk/*.py ./baseballclerk/
-COPY Pipfile Pipfile.lock setup.py ./
+WORKDIR /usr/src/gdtbot
 
-RUN pipenv install --system --deploy
+COPY poetry.lock pyproject.toml ./
+COPY baseballclerk ./baseballclerk
 
-WORKDIR /baseballclerk/
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev --no-interaction --no-ansi
 
-ENTRYPOINT [ "python", "-m", "baseballclerk" ]
-CMD [ "-h" ]
+WORKDIR /root/baseballclerk/
+
+ENTRYPOINT [ "python", "-OO", "-u", "-m", "baseballclerk" ]

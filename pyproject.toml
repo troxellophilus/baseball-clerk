@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "baseball-clerk"
+version = "1.2.0"
+description = "Live baseball play-by-play comments and more for BaseballBot managed game threads on Reddit."
+authors = ["Drew Troxell <code@trox.space>"]
+license = "MIT License"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+backoff = "^2.1.2"
+httpx = "^0.23.0"
+praw = "^7.6.0"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.14.5"
+black = "^22.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

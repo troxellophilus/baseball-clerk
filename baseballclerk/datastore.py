@@ -7,10 +7,10 @@ from collections.abc import MutableMapping
 import json
 import sqlite3
 import string
-from typing import Generator
+from typing import Generator, Optional
 
 
-_CON = None  # type: sqlite3.Connection
+_CON: Optional[sqlite3.Connection] = None
 
 
 def connect(database: str, *args, **kwargs):
@@ -19,18 +19,24 @@ def connect(database: str, *args, **kwargs):
     _CON = sqlite3.connect(database, *args, **kwargs)
 
 
+def _connection():
+    if _CON is None:
+        raise ValueError("connection not initialized")
+    return _CON
+
+
 def _safety_first(table: str):
     """Simple table-name injection protection."""
-    if not all(c in string.ascii_letters + string.digits + '_' for c in table):
-        raise ValueError('Bad table name.')
+    if not all(c in string.ascii_letters + string.digits + "_" for c in table):
+        raise ValueError("Bad table name.")
 
 
 def read(table: str, key: str):
     """Read a single row by key."""
     _safety_first(table)
-    with _CON:
-        cur = _CON.cursor()
-        cur.execute(f'SELECT * FROM {table} WHERE key = ?', (key,))
+    with _connection() as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM {table} WHERE key = ?", (key,))
         row = cur.fetchone()
     return row
 
@@ -38,23 +44,27 @@ def read(table: str, key: str):
 def create_table(table: str):
     """Create a table for key-dict storage."""
     _safety_first(table)
-    with _CON:
-        _CON.execute(f'CREATE TABLE IF NOT EXISTS {table}(key text PRIMARY KEY, data TEXT)')
+    with _connection() as conn:
+        conn.execute(
+            f"CREATE TABLE IF NOT EXISTS {table}(key text PRIMARY KEY, data TEXT)"
+        )
 
 
 def write(table: str, key: str, data: str):
     """Write data to a table."""
     _safety_first(table)
-    with _CON:
-        _CON.execute(f'INSERT OR REPLACE INTO {table}(key, data) VALUES(?, ?);', (key, data))
+    with _connection() as conn:
+        conn.execute(
+            f"INSERT OR REPLACE INTO {table}(key, data) VALUES(?, ?);", (key, data)
+        )
 
 
 def keys(table: str) -> Generator:
     """Yield keys from a table."""
     _safety_first(table)
-    with _CON:
-        cur = _CON.cursor()
-        cur.execute(f'SELECT key FROM {table};')
+    with _connection() as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT key FROM {table};")
         while True:
             rows = cur.fetchmany()
             if not rows:
@@ -65,9 +75,9 @@ def keys(table: str) -> Generator:
 def count(table: str) -> int:
     """Count rows in a table."""
     _safety_first(table)
-    with _CON:
-        cur = _CON.cursor()
-        cur.execute(f'SELECT COUNT(*) FROM {table};')
+    with _connection() as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT COUNT(*) FROM {table};")
         count = int(cur.fetchone()[0])
     return count
 
@@ -75,8 +85,8 @@ def count(table: str) -> int:
 def delete(table: str, key: str):
     """Delete a key from a table."""
     _safety_first(table)
-    with _CON:
-        _CON.execute(f'DELETE FROM {table} WHERE key = ?;', (key,))
+    with _connection() as conn:
+        conn.execute(f"DELETE FROM {table} WHERE key = ?;", (key,))
 
 
 class Table(MutableMapping):

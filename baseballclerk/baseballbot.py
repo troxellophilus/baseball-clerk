@@ -3,22 +3,22 @@
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from typing import List
+from typing import List, Optional
 
 from baseballclerk import util
 
 
-def _get_game_threads(subreddit: str = None) -> List[dict]:
+def _get_game_threads(subreddit: Optional[str] = None) -> List[dict]:
     """Get game threads from BaseballBot."""
     if subreddit:
         url = f"http://baseballbot.io/subreddits/{subreddit}/game_threads.json"
     else:
         url = "http://baseballbot.io/game_threads.json"
     data = util.cached_request_json(url)
-    return data['data']
+    return data["data"]
 
 
-def active_game_threads(subreddit: str = None) -> List[dict]:
+def active_game_threads(subreddit: Optional[str] = None) -> List[dict]:
     """Retrieve active game threads from BaseballBot.
 
     Filters out any inactive threads. A game thread is considered active
@@ -29,10 +29,10 @@ def active_game_threads(subreddit: str = None) -> List[dict]:
     """
     active = []
     for game_thread in _get_game_threads(subreddit):
-        if game_thread['status'] != 'Posted':
+        if game_thread["status"] != "Posted":
             continue
 
-        starts_at = datetime.fromisoformat(game_thread['startsAt'])
+        starts_at = datetime.fromisoformat(game_thread["startsAt"])
 
         if (starts_at - timedelta(seconds=600)) > datetime.now(timezone.utc):
             continue
