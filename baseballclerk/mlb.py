@@ -57,9 +57,21 @@ def due_up(game_pk: str) -> Optional[dict]:
     elif inning_state == "middle":
         inning_half = "Bottom"
 
-        # Check if the game is over by rule, even if the state doesn't show yet
-        if linescore["teams"]["home"]["runs"] > linescore["teams"]["away"]["runs"]:
-            return None
+    # Check if the game is over by rule, even if the state doesn't show yet
+    if (
+        inning >= 9
+        and inning_half == "Bottom"
+        and linescore["teams"]["home"]["runs"] > linescore["teams"]["away"]["runs"]
+    ):
+        # Going into the bottom of the inning and the home team is leading, so the game is over (home team won)
+        return None
+    elif (
+        inning >= 10
+        and inning_half == "Top"
+        and linescore["teams"]["home"]["runs"] != linescore["teams"]["away"]["runs"]
+    ):
+        # Going into the top of the inning and we are not tied, so the game is over
+        return None
 
     due_up = {"inning": inning, "inningHalf": inning_half}
 
